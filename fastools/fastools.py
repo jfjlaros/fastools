@@ -66,6 +66,21 @@ def guessFileType(handle):
     return "fastq"
 #guessFileType
 
+def sanitise(inputHandle, outputHandle):
+    """
+    Convert a FASTA/FASTQ file to a standard FASTA/FASTQ file.
+
+    @arg inputHandle: Open readable handle to a FASTA/FASTQ file.
+    @type inputHandle: stream
+    @arg outputHandle: Open writable handle to a FASTA/FASTQ file.
+    @type outputHandle: stream
+    """
+    fileFormat = guessFileType(inputHandle)
+
+    for record in SeqIO.parse(inputHandle, fileFormat):
+        SeqIO.write(record, outputHandle, fileFormat)
+#sanitise
+
 def fa2fq(inputHandle, outputHandle, quality):
     """
     Convert a FASTA file to a FASTQ file.
@@ -284,7 +299,7 @@ def select(inputHandle, outputHandle, first, last):
     @arg last: Last base of the selection.
     @type last: int
     """
-    fileFormat = ngslib.guessFileType(inputHandle)
+    fileFormat = guessFileType(inputHandle)
 
     for record in SeqIO.parse(inputHandle, fileFormat):
         SeqIO.write([record[first:last]], outputHandle, fileFormat)
@@ -473,6 +488,9 @@ def main():
         description=usage[0], epilog=usage[1])
     subparsers = parser.add_subparsers(dest="subcommand")
 
+    parser_sanitise = subparsers.add_parser("sanitise",
+        parents=[file_parser], description=docSplit(sanitise))
+
     parser_fa2fq = subparsers.add_parser("fa2fq",
         parents=[file_parser, qual_parser], description=docSplit(fa2fq))
 
@@ -555,6 +573,9 @@ def main():
         help="length threshold (%(type)s default: %(default)s)")
 
     args = parser.parse_args()
+
+    if args.subcommand == "sanitise":
+        sanitise(args.INPUT, args.OUTPUT)
 
     if args.subcommand == "fa2fq":
         fa2fq(args.INPUT, args.OUTPUT, args.quality)
