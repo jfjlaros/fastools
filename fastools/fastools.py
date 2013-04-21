@@ -274,8 +274,7 @@ def s2i(inputHandle, outputHandle):
     @arg outputHandle: Open writeable handle to a FASTQ file.
     @type outputHandle: stream
     """
-    count = SeqIO.convert(inputHandle, "fastq", outputHandle, "fastq-illumina")
-    print "converted %i records" % count
+    return SeqIO.convert(inputHandle, "fastq", outputHandle, "fastq-illumina")
 #s2i
 
 def countTags(inputHandle, tag, mismatches):
@@ -626,7 +625,7 @@ def main():
     #if
 
     if args.subcommand == "s2i":
-        s2i(args.INPUT, args.OUTPUT)
+        print "converted %i records" % s2i(args.INPUT, args.OUTPUT)
 
     if args.subcommand == "tagcount":
         print countTags(args.INPUT, args.tag, args.mismatches)
