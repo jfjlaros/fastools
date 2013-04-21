@@ -336,6 +336,7 @@ def fa2gb(inputHandle, outputHandle, accno):
     for record in SeqIO.parse(inputHandle, "fasta"):
         record.seq.alphabet = IUPAC.unambiguous_dna
         record.id = accno
+        record.name = accno
         SeqIO.write(record, outputHandle, "genbank")
     #for
 #fa2gb
