@@ -7,32 +7,6 @@ Toolkit for the analysis and manipulation of FASTA/FASTQ files.
 Use any of the positional arguments with the -h option for more information.
 """
 
-# The following scripts are obsoleted by this toolkit:
-#
-# alignRefSeqs.py
-# refSize.py
-# restrict.py
-# collapse.py
-# sanger2illumina.py
-# countTags.py
-# select.py
-# fa2fq.py
-# fa2gb.py
-# fastaMangle.py
-# fq2fa.py
-# generateDNA.py
-# getReference.py
-# lengthFilter.py
-# gb2fa.py
-
-# The ngslib.py libary is also incorporated.
-
-# Not implemented / not sure:
-#
-#    checkBc.py
-#    mergePairs.py
-#    sync_paired_end_reads.py
-
 import sys
 import random
 import urllib2
