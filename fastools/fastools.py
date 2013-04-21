@@ -150,11 +150,18 @@ def aln(fastaHandle1, fastaHandle2):
     @type fastaHandle1: stream
     @arg fastaHandle2: Open readable handle to a FASTA file.
     @type fastaHandle2: stream
+
+    @returns: List of distances.
+    @rtype: list[tuple(str, str, int)]
     """
+    distances = []
+
     for i in SeqIO.parse(fastaHandle1, "fasta"):
         for j in SeqIO.parse(fastaHandle2, "fasta"):
-            print("%s %s %i" % (i.name, j.name,
+            distances.append((i.name, j.name,
                 Levenshtein.distance(str(i.seq), str(j.seq))))
+
+    return distances
 #aln
 
 def length(handle):
@@ -165,7 +172,7 @@ def length(handle):
     @type handle: stream
 
     @returns: List of lengths.
-    @rtype: list
+    @rtype: list[int]
     """
     lengths = []
 
@@ -593,7 +600,8 @@ def main():
         add(args.INPUT, args.OUTPUT, args.SEQ, args.quality)
 
     if args.subcommand == "aln":
-        aln(*args.INPUT)
+        for i in aln(*args.INPUT):
+            print "%s %s %i" % i
 
     if args.subcommand == "len":
         print ' '.join(map(lambda x: str(x), length(args.INPUT)))
