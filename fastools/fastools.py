@@ -287,6 +287,9 @@ def countTags(inputHandle, tag, mismatches):
     @type tag: str
     @arg mismatches: The number of mismatches allowed.
     @type mismatches: int
+
+    @returns: Number of occurrences.
+    @rtype: int
     """
     count = 0
 
@@ -349,8 +352,6 @@ def gb2fa(inputHandle, outputHandle):
     @type inputHandle: stream
     @arg outputHandle: Open writable handle to a FASTA file.
     @type outputHandle: stream
-    @arg accno: A GenBank accession number.
-    @type accno: str
     """
     for record in SeqIO.parse(inputHandle, "genbank"):
         SeqIO.write(record, outputHandle, "fasta")
