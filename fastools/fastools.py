@@ -186,18 +186,26 @@ def restrict(handle, enzymes):
     """
     Fragment a genome with restriction enzymes.
 
-    @arg handle:
+    @arg handle: Open readable handle to a FASTA file.
     @type handle: stream
+    @arg enzymes: List of restiction enzymes.
+    @type enzymes: list(str)
+
+    @returns: List of fragment sizes.
+    @rtype: list[int]
     """
     restrictionBatch = Restriction.RestrictionBatch(enzymes)
+    lengths = []
 
     for record in SeqIO.parse(handle, "fasta"):
         positions = sorted(set([0, len(record.seq)] + 
             sum(restrictionBatch.search(record.seq).values(), [])))
 
         for i in range(len(positions) - 1):
-            print positions[i + 1] - positions[i]
+            lengths.append(positions[i + 1] - positions[i])
     #for
+
+    return lengths
 #restrict
 
 def __collapse(word, maxStretch):
@@ -607,7 +615,8 @@ def main():
         print ' '.join(map(lambda x: str(x), length(args.INPUT)))
 
     if args.subcommand == "restrict":
-        restrict(args.INPUT, args.enzyme)
+        print ' '.join(map(lambda x: str(x), restrict(args.INPUT,
+            args.enzyme)))
 
     if args.subcommand == "collapse":
         collapses = collapseFasta(args.INPUT, args.OUTPUT, args.stretch)
