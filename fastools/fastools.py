@@ -459,8 +459,8 @@ def lengthSplit(inputHandle, outputHandles, length):
     @type inputHandle: stream
     @arg outputHandles: List of open writable handles to fasta/fastq files.
     @type outputHandles: list[stream]
-    @arg clip: Length threshold.
-    @type clip: int
+    @arg length: Length threshold.
+    @type length: int
     """
     fileType = guessFileType(inputHandle)
 
@@ -652,7 +652,7 @@ def main():
         cat(args.INPUT)
 
     if args.subcommand == "lenfilt":
-        lengthSplit(args.INPUT, args.OUTPUT, args.LENGTH)
+        lengthSplit(args.INPUT, args.OUTPUT, args.length)
 #main
 
 if __name__ == "__main__":
