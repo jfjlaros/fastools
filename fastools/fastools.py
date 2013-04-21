@@ -151,7 +151,6 @@ def aln(fastaHandle1, fastaHandle2):
     @arg fastaHandle2: Open readable handle to a FASTA file.
     @type fastaHandle2: stream
     """
-
     for i in SeqIO.parse(fastaHandle1, "fasta"):
         for j in SeqIO.parse(fastaHandle2, "fasta"):
             print("%s %s %i" % (i.name, j.name,
@@ -160,13 +159,20 @@ def aln(fastaHandle1, fastaHandle2):
 
 def length(handle):
     """
-    Report the length of a FASTA sequence.
+    Report the lengths of all FASTA records in a file.
 
     @arg handle: Open readable handle to a FASTA file.
     @type handle: stream
+
+    @returns: List of lengths.
+    @rtype: list
     """
+    lengths = []
+
     for record in SeqIO.parse(handle, "fasta"):
-        print len(record.seq)
+        lengths.append(len(record.seq))
+
+    return lengths
 #length
 
 def restrict(handle, enzymes):
@@ -253,7 +259,7 @@ def s2i(inputHandle, outputHandle):
     @arg outputHandle: Open writeable handle to a FASTQ file.
     @type outputHandle: stream
     """
-    count = SeqIO.convert(IN_file,"fastq", OUT_file,"fastq-illumina")
+    count = SeqIO.convert(inputHandle, "fastq", outputHandle, "fastq-illumina")
     print "converted %i records" % count
 #s2i
 
@@ -503,7 +509,7 @@ def main():
     parser_aln = subparsers.add_parser("aln", parents=[input2_parser],
         description=docSplit(aln))
 
-    parser_len = subparsers.add_parser("len", parents=[file_parser],
+    parser_len = subparsers.add_parser("len", parents=[input_parser],
         description=docSplit(length))
 
     parser_restrict = subparsers.add_parser("restrict", parents=[input_parser],
@@ -590,7 +596,7 @@ def main():
         aln(*args.INPUT)
 
     if args.subcommand == "len":
-        length(args.INPUT)
+        print ' '.join(map(lambda x: str(x), length(args.INPUT)))
 
     if args.subcommand == "restrict":
         restrict(args.INPUT, args.enzyme)
