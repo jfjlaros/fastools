@@ -256,7 +256,7 @@ def collapse(inputHandle, outputHandle, stretch):
     totalCollapses = 0
 
     for record in SeqIO.parse(inputHandle, "fasta"):
-        sequence, collapses = collapse(record.seq, stretch)
+        sequence, collapses = __collapse(record.seq, stretch)
         record.seq = Seq.Seq(sequence)
         SeqIO.write(record, outputHandle, "fasta")
         totalCollapses += collapses
@@ -619,7 +619,7 @@ def main():
             args.enzyme)))
 
     if args.subcommand == "collapse":
-        collapses = collapseFasta(args.INPUT, args.OUTPUT, args.stretch)
+        collapses = collapse(args.INPUT, args.OUTPUT, args.stretch)
 
         print "Collapsed %i stretches longer than %i." % (collapses,
             args.stretch)
