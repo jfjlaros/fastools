@@ -279,9 +279,9 @@ def s2i(inputHandle, outputHandle):
 
 def countTags(inputHandle, tag, mismatches):
     """
-    Count tags in a fasta file.
+    Count tags in a FASTA file.
 
-    @arg inputHandle: Open readable handle to a fasta file.
+    @arg inputHandle: Open readable handle to a FASTA file.
     @type inputHandle: stream
     @arg tag: The tag that needs to be counted.
     @type tag: str
@@ -628,7 +628,7 @@ def main():
         print "converted %i records" % s2i(args.INPUT, args.OUTPUT)
 
     if args.subcommand == "tagcount":
-        print countTags(args.INPUT, args.tag, args.mismatches)
+        print countTags(args.INPUT, args.SEQ, args.mismatches)
 
     if args.subcommand == "select":
         select(args.INPUT, args.OUTPUT, args.FIRST, args.LAST)
