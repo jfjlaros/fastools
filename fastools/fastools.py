@@ -304,11 +304,7 @@ def countTags(inputHandle, tag, mismatches):
 def select(inputHandle, outputHandle, first, last):
     """
     Select a substring from every read.
-
-    Please note:
-    - Positions are zero based.
-    - The first position of the selection is included.
-    - Everything UNTIL the last position of the selection is included.
+    Positions are one-based and inclusive.
 
     @arg inputHandle: Open readable handle to a FASTA/FASTQ file.
     @type inputHandle: stream
@@ -320,9 +316,10 @@ def select(inputHandle, outputHandle, first, last):
     @type last: int
     """
     fileFormat = guessFileType(inputHandle)
+    realFirst = first - 1
 
     for record in SeqIO.parse(inputHandle, fileFormat):
-        SeqIO.write([record[first:last]], outputHandle, fileFormat)
+        SeqIO.write([record[realFirst:last]], outputHandle, fileFormat)
 #select
 
 def fa2gb(inputHandle, outputHandle, accno):
