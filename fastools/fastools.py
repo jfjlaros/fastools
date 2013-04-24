@@ -87,7 +87,7 @@ def fq2fa(inputHandle, outputHandle):
             SeqIO.write(record, outputHandle, "fasta")
     except ValueError, error:
         print "Error: %s" % error
-        emptyRecord = SeqRecord.SeqRecord(Seq.Seq(""), "", "", "")
+        emptyRecord = SeqRecord(Seq.Seq(""), "", "", "")
         SeqIO.write(emptyRecord, outputHandle, "fasta")
     #except
 #fq2fa
