@@ -299,6 +299,38 @@ def select(inputHandle, outputHandle, first, last):
         SeqIO.write([record[realFirst:last]], outputHandle, fileFormat)
 #select
 
+def rselect(inputHandle, outputHandle, name, first, last):
+    """
+    Select a substring from every read.
+    Positions are one-based and inclusive.
+
+    @arg inputHandle: Open readable handle to a FASTA/FASTQ file.
+    @type inputHandle: stream
+    @arg outputHandle: Open writable handle to a FASTA/FASTQ file.
+    @type outputHandle: stream
+    @arg name: Accession number.
+    @type name: str
+    @arg first: First base of the selection.
+    @type first: int
+    @arg last: Last base of the selection.
+    @type last: int
+    """
+    fileFormat = guessFileType(inputHandle)
+    realFirst = first - 1
+
+    for record in SeqIO.parse(inputHandle, fileFormat):
+        fullAccNo = record.name
+
+        if '|' in record.name:
+            fullAccNo = record.name.split('|')[3]
+
+        accno = fullAccNo.split('.')[0]
+
+        if accno == name:
+            SeqIO.write([record[realFirst:last]], outputHandle, fileFormat)
+    #for
+#rselect
+
 def fa2gb(inputHandle, outputHandle, accno):
     """
     Convert a FASTA file to a GenBank file.
@@ -524,6 +556,15 @@ def main():
     parser_select.add_argument("LAST", type=int,
         help="last base of the selection (%(type)s)")
 
+    parser_rselect = subparsers.add_parser("rselect", parents=[file_parser],
+        description=docSplit(rselect))
+    parser_rselect.add_argument("NAME", type=str,
+        help="accession number")
+    parser_rselect.add_argument("FIRST", type=int,
+        help="first base of the selection (%(type)s)")
+    parser_rselect.add_argument("LAST", type=int,
+        help="last base of the selection (%(type)s)")
+
     parser_fa2gb = subparsers.add_parser("fa2gb", parents=[file_parser],
         description=docSplit(fa2gb))
     parser_fa2gb.add_argument("ACCNO", type=str,
@@ -605,6 +646,9 @@ def main():
 
     if args.subcommand == "select":
         select(args.INPUT, args.OUTPUT, args.FIRST, args.LAST)
+
+    if args.subcommand == "rselect":
+        rselect(args.INPUT, args.OUTPUT, args.NAME, args.FIRST, args.LAST)
 
     if args.subcommand == "fa2gb":
         fa2gb(args.INPUT, args.OUTPUT, args.ACCNO)
