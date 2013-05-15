@@ -416,28 +416,31 @@ def generateDNA(size, handle, name, description):
     SeqIO.write(record, handle, "fasta")
 #generateDNA
 
-def getReference(acc, start, stop, orientation, email, outputHandle):
+def getReference(acc, email, outputHandle, start=0, stop=0, orientation=0):
     """
     Retrieve a reference sequence and find the location of a specific gene.
 
     @arg acc: An accession number.
     @type acc: str
+    @arg email: An email address.
+    @type email: str
+    @arg outputHandle: An open writable handle.
+    @type outputHandle: stream
     @arg start: Start of the area of interest.
     @type start: int
     @arg stop: End of the area of interest.
     @type stop: int
     @arg orientation: Orientation (1=forward, 2=reverse).
     @type orientation: int
-    @arg email: An email address.
-    @type email: str
-    @arg outputHandle: An open writable handle.
-    @type outputHandle: stream
     """
     Entrez.email = email
 
     try:
-        handle = Entrez.efetch(db="nuccore", rettype="fasta", id=acc,
-            seq_start=start, seq_stop=stop, strand=orientation)
+        if start:
+            handle = Entrez.efetch(db="nuccore", rettype="fasta", id=acc,
+                seq_start=start, seq_stop=stop, strand=orientation)
+        else:
+            handle = Entrez.efetch(db="nuccore", rettype="fasta", id=acc)
     except urllib2.HTTPError:
         sys.stderr.write("Error: could not retrieve %s\n" % acc)
         return
@@ -589,14 +592,14 @@ def main():
         description=docSplit(getReference))
     parser_get.add_argument("ACC", type=str,
         help="accession number")
-    parser_get.add_argument("START", type=int,
-        help="start of the area of interest")
-    parser_get.add_argument("STOP", type=int,
-        help="end of the area of interest")
-    parser_get.add_argument("ORIENTATION", type=int,
-        help="orientation (1=forward, 2=reverse)")
     parser_get.add_argument("EMAIL", type=str,
         help="email address")
+    parser_get.add_argument("-s", dest="start", type=int,
+        help="start of the area of interest")
+    parser_get.add_argument("-p", dest="stop", type=int,
+        help="end of the area of interest")
+    parser_get.add_argument("-o", dest="orientation", type=int,
+        help="orientation (1=forward, 2=reverse)")
 
     parser_cat = subparsers.add_parser("cat", parents=[input_parser],
         description=docSplit(cat))
@@ -663,8 +666,8 @@ def main():
         generateDNA(args.LENGTH, args.OUTPUT, args.NAME, args.DESCR)
 
     if args.subcommand == "get":
-        getReference(args.ACC, args.START, args.STOP, args.ORIENTATION,
-            args.EMAIL, args.OUTPUT)
+        getReference(args.ACC, args.EMAIL, args.OUTPUT, args.start, args.stop,
+            args.orientation)
 
     if args.subcommand == "cat":
         cat(args.INPUT)
