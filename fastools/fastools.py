@@ -16,8 +16,7 @@ from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
 
-def docSplit(func):
-    return func.__doc__.split("\n\n")[0]
+from . import docSplit, version
 
 def guessFileType(handle):
     """
@@ -514,6 +513,7 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=usage[0], epilog=usage[1])
+    parser.add_argument('-v', action="version", version=version(parser.prog))
     subparsers = parser.add_subparsers(dest="subcommand")
 
     parser_sanitise = subparsers.add_parser("sanitise",
