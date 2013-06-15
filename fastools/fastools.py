@@ -174,7 +174,7 @@ def restrict(handle, enzymes):
     return lengths
 #restrict
 
-def __collapse(word, maxStretch):
+def collapse(word, maxStretch):
     """
     Collapse stretches of single letters in a word that exceed a certain
     length.
@@ -203,9 +203,9 @@ def __collapse(word, maxStretch):
     #for
 
     return collapsedWord, numberOfCollapses
-#__collapse
+#collapse
 
-def collapse(inputHandle, outputHandle, stretch):
+def collapseFasta(inputHandle, outputHandle, stretch):
     """
     Remove all mononucleotide stretches from a FASTA file.
 
@@ -222,14 +222,14 @@ def collapse(inputHandle, outputHandle, stretch):
     totalCollapses = 0
 
     for record in SeqIO.parse(inputHandle, "fasta"):
-        sequence, collapses = __collapse(record.seq, stretch)
+        sequence, collapses = collapse(record.seq, stretch)
         record.seq = Seq.Seq(sequence)
         SeqIO.write(record, outputHandle, "fasta")
         totalCollapses += collapses
     #for
 
     return totalCollapses
-#collapse
+#collapseFasta
 
 def s2i(inputHandle, outputHandle):
     """
@@ -532,7 +532,7 @@ def main():
         default=["EcoRI", "MseI"], help="restriction enzymes")
 
     parser_collapse = subparsers.add_parser("collapse", parents=[file_parser],
-        description=docSplit(collapse))
+        description=docSplit(collapseFasta))
     parser_collapse.add_argument('-s', '--stretch', dest='stretch', default=3,
         type=int, help='Length of the stretch (%(type)s default: %(default)s)')
 
@@ -627,7 +627,7 @@ def main():
             args.enzyme)))
 
     if args.subcommand == "collapse":
-        collapses = collapse(args.INPUT, args.OUTPUT, args.stretch)
+        collapses = collapseFasta(args.INPUT, args.OUTPUT, args.stretch)
 
         print "Collapsed %i stretches longer than %i." % (collapses,
             args.stretch)
