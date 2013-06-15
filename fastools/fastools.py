@@ -1,12 +1,5 @@
 #!/usr/bin/python
 
-"""
-Toolkit for the analysis and manipulation of FASTA/FASTQ files.
-
-
-Use any of the positional arguments with the -h option for more information.
-"""
-
 import sys
 import random
 import urllib2
@@ -16,7 +9,7 @@ from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
 
-from . import docSplit, version
+from . import docSplit, version, usage
 
 def guessFileType(handle):
     """
@@ -509,7 +502,6 @@ def main():
     seq_parser = argparse.ArgumentParser(add_help=False)
     seq_parser.add_argument("SEQ", type=str, help="a sequence")
 
-    usage = __doc__.split("\n\n\n")
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=usage[0], epilog=usage[1])
