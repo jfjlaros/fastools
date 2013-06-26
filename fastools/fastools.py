@@ -24,6 +24,11 @@ def guessFileType(handle):
     @returns: Either "fasta" or "fastq".
     @rtype: str
     """
+    if handle.isatty():
+        sys.stderr.write("Cannot deterine file type in stream, assuming FASTA")
+        return "fasta"
+    #if
+
     token = handle.read(1)
     handle.seek(0)
 
