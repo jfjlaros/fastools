@@ -457,6 +457,17 @@ def cat(handle):
         print record.seq
 #cat
 
+def descr(handle):
+    """
+    Return the description of all records in a FASTA file.
+
+    @arg handle: Open readable handle to a FASTA file.
+    @type handle: stream
+    """
+    for record in SeqIO.parse(handle, "fasta"):
+        print record.description
+#descr
+
 def lengthSplit(inputHandle, outputHandles, length):
     """
     Split a fasta/fastq file on length.
@@ -601,6 +612,9 @@ def main():
     parser_cat = subparsers.add_parser("cat", parents=[input_parser],
         description=docSplit(cat))
 
+    parser_cat = subparsers.add_parser("descr", parents=[input_parser],
+        description=docSplit(descr))
+
     parser_lenfilt = subparsers.add_parser("lenfilt", parents=[input_parser,
         output2_parser], description=docSplit(lengthSplit))
     parser_lenfilt.add_argument("-l", dest="length", type=int, default=25, 
@@ -668,6 +682,9 @@ def main():
 
     if args.subcommand == "cat":
         cat(args.INPUT)
+
+    if args.subcommand == "descr":
+        descr(args.INPUT)
 
     if args.subcommand == "lenfilt":
         lengthSplit(args.INPUT, args.OUTPUT, args.length)
