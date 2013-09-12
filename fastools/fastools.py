@@ -488,6 +488,25 @@ def lengthSplit(inputHandle, outputHandles, length):
             SeqIO.write([record], outputHandles[1], fileType)
 #lengthSplit
 
+def reverse(input_handle, output_handle):
+    """
+    Make the reverse complement a fasta/fastq file.
+
+    @arg input_handle: Open readable handle to a fasta/fastq file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a fasta/fastq file.
+    @type output_handle: stream
+    """
+    file_type = guessFileType(input_handle)
+
+    for record in SeqIO.parse(input_handle, file_type):
+        reverse_record = record.reverse_complement()
+        reverse_record.id = record.id
+        reverse_record.description = record.description
+        SeqIO.write([reverse_record], output_handle, file_type)
+    #for
+#reverse
+
 def main():
     """
     Main entry point.
@@ -620,6 +639,9 @@ def main():
     parser_lenfilt.add_argument("-l", dest="length", type=int, default=25, 
         help="length threshold (%(type)s default: %(default)s)")
 
+    parser_reverse = subparsers.add_parser("reverse", parents=[file_parser],
+        description=docSplit(reverse))
+
     args = parser.parse_args()
 
     if args.subcommand == "sanitise":
@@ -688,6 +710,9 @@ def main():
 
     if args.subcommand == "lenfilt":
         lengthSplit(args.INPUT, args.OUTPUT, args.length)
+
+    if args.subcommand == "reverse":
+        reverse(args.INPUT, args.OUTPUT)
 #main
 
 if __name__ == "__main__":
