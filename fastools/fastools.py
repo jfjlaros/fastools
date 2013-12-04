@@ -4,6 +4,7 @@ import sys
 import random
 import urllib2
 import argparse
+import itertools
 import Levenshtein
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
@@ -507,6 +508,26 @@ def reverse(input_handle, output_handle):
     #for
 #reverse
 
+def merge(input_handles, output_handle, fill):
+    """
+    Merge two fasta files.
+
+    @arg input_handle: List of open readable handle to fasta/fastq files.
+    @type input_handle: list(stream)
+    @arg output_handle: Open writable handle to a fasta/fastq file.
+    @type output_handle: stream
+    @arg fill: Amount of 'N's to be added between the reads.
+    @type fill: int
+    """
+    for records in itertools.izip(SeqIO.parse(input_handles[0], "fasta"),
+            SeqIO.parse(input_handles[1], "fasta")):
+        record = SeqRecord(Seq.Seq(
+            str(records[0].seq) + 'N' * fill + str(records[1].seq)),
+            records[0].name, records[0].id, records[0].description)
+        SeqIO.write([record], output_handle, "fasta")
+    #for
+#merge
+
 def main():
     """
     Main entry point.
@@ -642,6 +663,11 @@ def main():
     parser_reverse = subparsers.add_parser("reverse", parents=[file_parser],
         description=docSplit(reverse))
 
+    parser_merge = subparsers.add_parser("merge", parents=[input2_parser,
+        output_parser], description=docSplit(merge))
+    parser_merge.add_argument("-f", dest="fill", type=int, default=0,
+        help="Add 'N's between the reads (%(type)s default: %(default)s)")
+
     args = parser.parse_args()
 
     if args.subcommand == "sanitise":
@@ -713,6 +739,9 @@ def main():
 
     if args.subcommand == "reverse":
         reverse(args.INPUT, args.OUTPUT)
+
+    if args.subcommand == "merge":
+        merge(args.INPUT, args.OUTPUT, args.fill)
 #main
 
 if __name__ == "__main__":
