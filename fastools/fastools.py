@@ -13,7 +13,7 @@ from Bio.SeqRecord import SeqRecord
 
 from . import doc_split, version, usage
 
-def guess_file_type(handle):
+def guess_file_format(handle):
     """
     Guess the file type of an NGS data file.
 
@@ -37,7 +37,7 @@ def guess_file_type(handle):
     if token == '>':
         return "fasta"
     return "fastq"
-#guess_file_type
+#guess_file_format
 
 def sanitise(input_handle, output_handle):
     """
@@ -48,10 +48,10 @@ def sanitise(input_handle, output_handle):
     @arg output_handle: Open writable handle to a FASTA/FASTQ file.
     @type output_handle: stream
     """
-    fileFormat = guess_file_type(input_handle)
+    file_format = guess_file_format(input_handle)
 
-    for record in SeqIO.parse(input_handle, fileFormat):
-        SeqIO.write(record, output_handle, fileFormat)
+    for record in SeqIO.parse(input_handle, file_format):
+        SeqIO.write(record, output_handle, file_format)
 #sanitise
 
 def fa2fq(input_handle, output_handle, quality):
@@ -167,12 +167,12 @@ def restrict(handle, enzymes):
     @returns: List of fragment sizes.
     @rtype: list[int]
     """
-    restrictionBatch = Restriction.RestrictionBatch(enzymes)
+    restriction_batch = Restriction.RestrictionBatch(enzymes)
     lengths = []
 
     for record in SeqIO.parse(handle, "fasta"):
         positions = sorted(set([0, len(record.seq)] + 
-            sum(restrictionBatch.search(record.seq).values(), [])))
+            sum(restriction_batch.search(record.seq).values(), [])))
 
         for i in range(len(positions) - 1):
             lengths.append(positions[i + 1] - positions[i])
@@ -195,8 +195,8 @@ def collapse(word, max_stretch):
     @rtype: tuple(srt, int)
     """
     stretch = 0
-    collapsedWord = word[0]
-    numberOfCollapses = 0
+    collapsed_word = word[0]
+    number_of_collapses = 0
 
     for i in range(1, len(word)):
         if word[i - 1] == word[i]:
@@ -204,12 +204,12 @@ def collapse(word, max_stretch):
         else:
             stretch = 0
         if stretch < max_stretch:
-            collapsedWord += word[i]
+            collapsed_word += word[i]
         if stretch == max_stretch:
-            numberOfCollapses += 1
+            number_of_collapses += 1
     #for
 
-    return collapsedWord, numberOfCollapses
+    return collapsed_word, number_of_collapses
 #collapse
 
 def collapseFasta(input_handle, output_handle, stretch):
@@ -226,16 +226,16 @@ def collapseFasta(input_handle, output_handle, stretch):
     @returns: Number of collapsed stretches.
     @rtype: int
     """
-    totalCollapses = 0
+    total_collapses = 0
 
     for record in SeqIO.parse(input_handle, "fasta"):
         sequence, collapses = collapse(record.seq, stretch)
         record.seq = Seq.Seq(sequence)
         SeqIO.write(record, output_handle, "fasta")
-        totalCollapses += collapses
+        total_collapses += collapses
     #for
 
-    return totalCollapses
+    return total_collapses
 #collapseFasta
 
 def s2i(input_handle, output_handle):
@@ -247,7 +247,8 @@ def s2i(input_handle, output_handle):
     @arg output_handle: Open writeable handle to a FASTQ file.
     @type output_handle: stream
     """
-    return SeqIO.convert(input_handle, "fastq", output_handle, "fastq-illumina")
+    return SeqIO.convert(input_handle, "fastq", output_handle,
+        "fastq-illumina")
 #s2i
 
 def countTags(input_handle, tag, mismatches):
@@ -291,11 +292,11 @@ def select(input_handle, output_handle, first, last):
     @arg last: Last base of the selection.
     @type last: int
     """
-    fileFormat = guess_file_type(input_handle)
-    realFirst = first - 1
+    file_format = guess_file_format(input_handle)
+    real_first = first - 1
 
-    for record in SeqIO.parse(input_handle, fileFormat):
-        SeqIO.write([record[realFirst:last]], output_handle, fileFormat)
+    for record in SeqIO.parse(input_handle, file_format):
+        SeqIO.write([record[real_first:last]], output_handle, file_format)
 #select
 
 def rselect(input_handle, output_handle, name, first, last):
@@ -314,19 +315,19 @@ def rselect(input_handle, output_handle, name, first, last):
     @arg last: Last base of the selection.
     @type last: int
     """
-    fileFormat = guess_file_type(input_handle)
-    realFirst = first - 1
+    file_format = guess_file_format(input_handle)
+    real_first = first - 1
 
-    for record in SeqIO.parse(input_handle, fileFormat):
-        fullAccNo = record.name
+    for record in SeqIO.parse(input_handle, file_format):
+        full_acc_no = record.name
 
         if '|' in record.name:
-            fullAccNo = record.name.split('|')[3]
+            full_acc_no = record.name.split('|')[3]
 
-        accno = fullAccNo.split('.')[0]
+        accno = full_acc_no.split('.')[0]
 
         if accno == name:
-            SeqIO.write([record[realFirst:last]], output_handle, fileFormat)
+            SeqIO.write([record[real_first:last]], output_handle, file_format)
     #for
 #rselect
 
@@ -385,10 +386,10 @@ def mangle(input_handle, output_handle):
                 seq += 'A'
         #for
 
-        newRecord = SeqRecord(Seq.Seq(seq), record.id + 'C', "",
+        new_record = SeqRecord(Seq.Seq(seq), record.id + 'C', "",
             "Complement (not reverse-complement) of the non-N part of %s" %
             record.id)
-        SeqIO.write(newRecord, output_handle, "fasta")
+        SeqIO.write(new_record, output_handle, "fasta")
     #for
 #mangle
 
@@ -405,11 +406,11 @@ def generateDNA(size, handle, name, description):
     @arg description: Description of the DNA sequence.
     @arg description: str
     """
-    DNA = ['A', 'C', 'G', 'T']
+    dna = ['A', 'C', 'G', 'T']
     seq = ""
 
     for i in range(size):
-        seq += DNA[random.randint(0, 3)]
+        seq += dna[random.randint(0, 3)]
 
     record = SeqRecord(Seq.Seq(seq), name, "", description)
     SeqIO.write(record, handle, "fasta")
@@ -481,13 +482,13 @@ def lengthSplit(input_handle, output_handles, length):
     @arg length: Length threshold.
     @type length: int
     """
-    fileType = guess_file_type(input_handle)
+    file_format = guess_file_format(input_handle)
 
-    for record in SeqIO.parse(input_handle, fileType):
+    for record in SeqIO.parse(input_handle, file_format):
         if len(record.seq) >= length:
-            SeqIO.write([record], output_handles[0], fileType)
+            SeqIO.write([record], output_handles[0], file_format)
         else:
-            SeqIO.write([record], output_handles[1], fileType)
+            SeqIO.write([record], output_handles[1], file_format)
 #lengthSplit
 
 def reverse(input_handle, output_handle):
@@ -499,13 +500,13 @@ def reverse(input_handle, output_handle):
     @arg output_handle: Open writable handle to a fasta/fastq file.
     @type output_handle: stream
     """
-    file_type = guess_file_type(input_handle)
+    file_format = guess_file_format(input_handle)
 
-    for record in SeqIO.parse(input_handle, file_type):
+    for record in SeqIO.parse(input_handle, file_format):
         reverse_record = record.reverse_complement()
         reverse_record.id = record.id
         reverse_record.description = record.description
-        SeqIO.write([reverse_record], output_handle, file_type)
+        SeqIO.write([reverse_record], output_handle, file_format)
     #for
 #reverse
 
