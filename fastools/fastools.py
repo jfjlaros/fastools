@@ -13,7 +13,7 @@ from Bio.SeqRecord import SeqRecord
 
 from . import doc_split, version, usage
 
-def guessFileType(handle):
+def guess_file_type(handle):
     """
     Guess the file type of an NGS data file.
 
@@ -37,7 +37,7 @@ def guessFileType(handle):
     if token == '>':
         return "fasta"
     return "fastq"
-#guessFileType
+#guess_file_type
 
 def sanitise(inputHandle, outputHandle):
     """
@@ -48,7 +48,7 @@ def sanitise(inputHandle, outputHandle):
     @arg outputHandle: Open writable handle to a FASTA/FASTQ file.
     @type outputHandle: stream
     """
-    fileFormat = guessFileType(inputHandle)
+    fileFormat = guess_file_type(inputHandle)
 
     for record in SeqIO.parse(inputHandle, fileFormat):
         SeqIO.write(record, outputHandle, fileFormat)
@@ -291,7 +291,7 @@ def select(inputHandle, outputHandle, first, last):
     @arg last: Last base of the selection.
     @type last: int
     """
-    fileFormat = guessFileType(inputHandle)
+    fileFormat = guess_file_type(inputHandle)
     realFirst = first - 1
 
     for record in SeqIO.parse(inputHandle, fileFormat):
@@ -314,7 +314,7 @@ def rselect(inputHandle, outputHandle, name, first, last):
     @arg last: Last base of the selection.
     @type last: int
     """
-    fileFormat = guessFileType(inputHandle)
+    fileFormat = guess_file_type(inputHandle)
     realFirst = first - 1
 
     for record in SeqIO.parse(inputHandle, fileFormat):
@@ -481,7 +481,7 @@ def lengthSplit(inputHandle, outputHandles, length):
     @arg length: Length threshold.
     @type length: int
     """
-    fileType = guessFileType(inputHandle)
+    fileType = guess_file_type(inputHandle)
 
     for record in SeqIO.parse(inputHandle, fileType):
         if len(record.seq) >= length:
@@ -499,7 +499,7 @@ def reverse(input_handle, output_handle):
     @arg output_handle: Open writable handle to a fasta/fastq file.
     @type output_handle: stream
     """
-    file_type = guessFileType(input_handle)
+    file_type = guess_file_type(input_handle)
 
     for record in SeqIO.parse(input_handle, file_type):
         reverse_record = record.reverse_complement()
