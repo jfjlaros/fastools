@@ -10,7 +10,7 @@ from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
 
-from . import docSplit, version, usage
+from . import doc_split, version, usage
 
 def guessFileType(handle):
     """
@@ -565,50 +565,50 @@ def main():
     subparsers = parser.add_subparsers(dest="subcommand")
 
     parser_sanitise = subparsers.add_parser("sanitise",
-        parents=[file_parser], description=docSplit(sanitise))
+        parents=[file_parser], description=doc_split(sanitise))
 
     parser_fa2fq = subparsers.add_parser("fa2fq",
-        parents=[file_parser, qual_parser], description=docSplit(fa2fq))
+        parents=[file_parser, qual_parser], description=doc_split(fa2fq))
 
     parser_fq2fa = subparsers.add_parser("fq2fa", parents=[file_parser],
-        description=docSplit(fq2fa))
+        description=doc_split(fq2fa))
 
     parser_add = subparsers.add_parser("add", parents=[file_parser, seq_parser,
-        qual_parser], description=docSplit(add))
+        qual_parser], description=doc_split(add))
 
     parser_aln = subparsers.add_parser("aln", parents=[input2_parser],
-        description=docSplit(aln))
+        description=doc_split(aln))
 
     parser_len = subparsers.add_parser("len", parents=[input_parser],
-        description=docSplit(length))
+        description=doc_split(length))
 
     parser_restrict = subparsers.add_parser("restrict", parents=[input_parser],
-        description=docSplit(restrict))
+        description=doc_split(restrict))
     parser_restrict.add_argument("-r", dest="enzyme", type=str, nargs="+",
         default=["EcoRI", "MseI"], help="restriction enzymes")
 
     parser_collapse = subparsers.add_parser("collapse", parents=[file_parser],
-        description=docSplit(collapseFasta))
+        description=doc_split(collapseFasta))
     parser_collapse.add_argument('-s', '--stretch', dest='stretch', default=3,
         type=int, help='Length of the stretch (%(type)s default: %(default)s)')
 
     parser_s2i = subparsers.add_parser("s2i", parents=[file_parser],
-        description=docSplit(s2i))
+        description=doc_split(s2i))
 
     parser_tagcount = subparsers.add_parser("tagcount", parents=[input_parser,
-        seq_parser], description=docSplit(countTags))
+        seq_parser], description=doc_split(countTags))
     parser_tagcount.add_argument("-m", dest="mismatches", type=int, default=2,
         help="amount of mismatches allowed (%(type)s default=%(default)s)")
 
     parser_select = subparsers.add_parser("select", parents=[file_parser],
-        description=docSplit(select))
+        description=doc_split(select))
     parser_select.add_argument("FIRST", type=int,
         help="first base of the selection (%(type)s)")
     parser_select.add_argument("LAST", type=int,
         help="last base of the selection (%(type)s)")
 
     parser_rselect = subparsers.add_parser("rselect", parents=[file_parser],
-        description=docSplit(rselect))
+        description=doc_split(rselect))
     parser_rselect.add_argument("NAME", type=str,
         help="accession number")
     parser_rselect.add_argument("FIRST", type=int,
@@ -617,18 +617,18 @@ def main():
         help="last base of the selection (%(type)s)")
 
     parser_fa2gb = subparsers.add_parser("fa2gb", parents=[file_parser],
-        description=docSplit(fa2gb))
+        description=doc_split(fa2gb))
     parser_fa2gb.add_argument("ACCNO", type=str,
         help="GenBank accession number")
 
     parser_gb2fa = subparsers.add_parser("gb2fa", parents=[file_parser],
-        description=docSplit(gb2fa))
+        description=doc_split(gb2fa))
 
     parser_mangle = subparsers.add_parser("mangle", parents=[file_parser],
-        description=docSplit(mangle))
+        description=doc_split(mangle))
 
     parser_gen = subparsers.add_parser("gen", parents=[output_parser],
-        description=docSplit(generateDNA))
+        description=doc_split(generateDNA))
     parser_gen.add_argument("LENGTH", type=int,
         help="length of the DNA sequence")
     parser_gen.add_argument("NAME", type=str,
@@ -637,7 +637,7 @@ def main():
         help="descriptino of the DNA sequence")
 
     parser_get = subparsers.add_parser("get", parents=[output_parser],
-        description=docSplit(getReference))
+        description=doc_split(getReference))
     parser_get.add_argument("ACC", type=str,
         help="accession number")
     parser_get.add_argument("EMAIL", type=str,
@@ -650,21 +650,21 @@ def main():
         help="orientation (1=forward, 2=reverse)")
 
     parser_cat = subparsers.add_parser("cat", parents=[input_parser],
-        description=docSplit(cat))
+        description=doc_split(cat))
 
     parser_cat = subparsers.add_parser("descr", parents=[input_parser],
-        description=docSplit(descr))
+        description=doc_split(descr))
 
     parser_lenfilt = subparsers.add_parser("lenfilt", parents=[input_parser,
-        output2_parser], description=docSplit(lengthSplit))
+        output2_parser], description=doc_split(lengthSplit))
     parser_lenfilt.add_argument("-l", dest="length", type=int, default=25, 
         help="length threshold (%(type)s default: %(default)s)")
 
     parser_reverse = subparsers.add_parser("reverse", parents=[file_parser],
-        description=docSplit(reverse))
+        description=doc_split(reverse))
 
     parser_merge = subparsers.add_parser("merge", parents=[input2_parser,
-        output_parser], description=docSplit(merge))
+        output_parser], description=doc_split(merge))
     parser_merge.add_argument("-f", dest="fill", type=int, default=0,
         help="Add 'N's between the reads (%(type)s default: %(default)s)")
 
