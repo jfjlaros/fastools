@@ -115,52 +115,50 @@ def add(input_handle, output_handle, sequence, quality):
     #for
 #add
 
-def aln(fasta_handle_1, fasta_handle_2):
+def aln(input_handles):
     """
     Calculate the Levenshtein distance between two FASTA files.
 
-    :arg fasta_handle_1: Open readable handle to a FASTA file.
-    :type fasta_handle_1: stream
-    :arg fasta_handle_2: Open readable handle to a FASTA file.
-    :type fasta_handle_2: stream
+    :arg input_handles: Open readable handles to a FASTA files.
+    :type input_handles: list[stream]
 
     :return: List of distances.
     :rtype: list[tuple(str, str, int)]
     """
     distances = []
 
-    for i in SeqIO.parse(fasta_handle_1, "fasta"):
-        for j in SeqIO.parse(fasta_handle_2, "fasta"):
+    for i in SeqIO.parse(input_handles[0], "fasta"):
+        for j in SeqIO.parse(input_handles[1], "fasta"):
             distances.append((i.name, j.name,
                 Levenshtein.distance(str(i.seq), str(j.seq))))
 
     return distances
 #aln
 
-def length(handle):
+def length(input_handle):
     """
     Report the lengths of all FASTA records in a file.
 
-    :arg handle: Open readable handle to a FASTA file.
-    :type handle: stream
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
 
     :return: List of lengths.
     :rtype: list[int]
     """
     lengths = []
 
-    for record in SeqIO.parse(handle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         lengths.append(len(record.seq))
 
     return lengths
 #length
 
-def restrict(handle, enzymes):
+def restrict(input_handle, enzymes):
     """
     Fragment a genome with restriction enzymes.
 
-    :arg handle: Open readable handle to a FASTA file.
-    :type handle: stream
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
     :arg enzymes: List of restiction enzymes.
     :type enzymes: list(str)
 
@@ -170,7 +168,7 @@ def restrict(handle, enzymes):
     restriction_batch = Restriction.RestrictionBatch(enzymes)
     lengths = []
 
-    for record in SeqIO.parse(handle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         positions = sorted(set([0, len(record.seq)] + 
             sum(restriction_batch.search(record.seq).values(), [])))
 
@@ -251,14 +249,14 @@ def s2i(input_handle, output_handle):
         "fastq-illumina")
 #s2i
 
-def count_tags(input_handle, tag, mismatches):
+def count_tags(input_handle, sequence, mismatches):
     """
     Count tags in a FASTA file.
 
     :arg input_handle: Open readable handle to a FASTA file.
     :type input_handle: stream
-    :arg tag: The tag that needs to be counted.
-    :type tag: str
+    :arg sequence: The sequence that needs to be counted.
+    :type sequence: str
     :arg mismatches: The number of mismatches allowed.
     :type mismatches: int
 
@@ -269,9 +267,9 @@ def count_tags(input_handle, tag, mismatches):
 
     for record in SeqIO.parse(input_handle, "fasta"):
         alignment = pairwise2.align.localms(str(record.seq),
-            tag, 1, -1, 0, -1)
+            sequence, 1, -1, 0, -1)
 
-        if alignment and len(tag) - alignment[0][2] <= mismatches:
+        if alignment and len(sequence) - alignment[0][2] <= mismatches:
             count += 1
     #for
 
@@ -331,7 +329,7 @@ def rselect(input_handle, output_handle, name, first, last):
     #for
 #rselect
 
-def fa2gb(input_handle, output_handle, accno):
+def fa2gb(input_handle, output_handle, name):
     """
     Convert a FASTA file to a GenBank file.
 
@@ -339,13 +337,13 @@ def fa2gb(input_handle, output_handle, accno):
     :type input_handle: stream
     :arg output_handle: Open writable handle to a GenBank file.
     :type output_handle: stream
-    :arg accno: A GenBank accession number.
-    :type accno: str
+    :arg name: A GenBank accession number.
+    :type name: str
     """
     for record in SeqIO.parse(input_handle, "fasta"):
         record.seq.alphabet = IUPAC.unambiguous_dna
-        record.id = accno
-        record.name = accno
+        record.id = name
+        record.name = name
         SeqIO.write(record, output_handle, "genbank")
     #for
 #fa2gb
@@ -393,35 +391,35 @@ def mangle(input_handle, output_handle):
     #for
 #mangle
 
-def generate_dna(size, handle, name, description):
+def generate_dna(length, output_handle, name, description):
     """
     Generate a DNA sequence in FASTA format.
 
-    :arg size: Length of the DNA sequence.
-    :arg size: int
-    :arg handle: Open writable handle to a FASTA file.
-    :type handle: stream
+    :arg length: Length of the DNA sequence.
+    :type length: int
+    :arg output_handle: Open writable handle to a FASTA file.
+    :type output_handle: stream
     :arg name: Name of the DNA sequence.
-    :arg name: str
+    :type name: str
     :arg description: Description of the DNA sequence.
-    :arg description: str
+    :type description: str
     """
     dna = ['A', 'C', 'G', 'T']
     seq = ""
 
-    for i in range(size):
+    for i in range(length):
         seq += dna[random.randint(0, 3)]
 
     record = SeqRecord(Seq.Seq(seq), name, "", description)
-    SeqIO.write(record, handle, "fasta")
+    SeqIO.write(record, output_handle, "fasta")
 #generate_dna
 
-def get_reference(acc, email, output_handle, start=0, stop=0, orientation=0):
+def get_reference(name, email, output_handle, start=0, stop=0, orientation=0):
     """
     Retrieve a reference sequence and find the location of a specific gene.
 
-    :arg acc: An accession number.
-    :type acc: str
+    :arg name: An accession number.
+    :type name: str
     :arg email: An email address.
     :type email: str
     :arg output_handle: An open writable handle.
@@ -437,37 +435,37 @@ def get_reference(acc, email, output_handle, start=0, stop=0, orientation=0):
 
     try:
         if start:
-            handle = Entrez.efetch(db="nuccore", rettype="fasta", id=acc,
+            handle = Entrez.efetch(db="nuccore", rettype="fasta", id=name,
                 seq_start=start, seq_stop=stop, strand=orientation)
         else:
-            handle = Entrez.efetch(db="nuccore", rettype="fasta", id=acc)
+            handle = Entrez.efetch(db="nuccore", rettype="fasta", id=name)
     except urllib2.HTTPError:
-        sys.stderr.write("Error: could not retrieve %s\n" % acc)
+        sys.stderr.write("Error: could not retrieve %s\n" % name)
         return
     #except
 
     output_handle.write(handle.read())
 #get_reference
 
-def cat(handle):
+def cat(input_handle):
     """
     Return the sequence content of a FASTA file.
 
-    :arg handle: Open readable handle to a FASTA file.
-    :type handle: stream
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
     """
-    for record in SeqIO.parse(handle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         print record.seq
 #cat
 
-def descr(handle):
+def descr(input_handle):
     """
     Return the description of all records in a FASTA file.
 
-    :arg handle: Open readable handle to a FASTA file.
-    :type handle: stream
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
     """
-    for record in SeqIO.parse(handle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         print record.description
 #descr
 
@@ -535,20 +533,20 @@ def main():
     Main entry point.
     """
     input_parser = argparse.ArgumentParser(add_help=False)
-    input_parser.add_argument("INPUT", type=argparse.FileType('r'),
-        help="input file")
+    input_parser.add_argument("input_handle", metavar="INPUT",
+        type=argparse.FileType('r'), help="input file")
 
     input2_parser = argparse.ArgumentParser(add_help=False)
-    input2_parser.add_argument("INPUT", type=argparse.FileType('r'), nargs=2,
-        help="input files")
+    input2_parser.add_argument("input_handles", metavar="INPUT",
+        type=argparse.FileType('r'), nargs=2, help="input files")
 
     output_parser = argparse.ArgumentParser(add_help=False)
-    output_parser.add_argument("OUTPUT", type=argparse.FileType('w'),
-        help="output file")
+    output_parser.add_argument("output_handle", metavar="OUTPUT",
+        type=argparse.FileType('w'), help="output file")
 
     output2_parser = argparse.ArgumentParser(add_help=False)
-    output2_parser.add_argument("OUTPUT", type=argparse.FileType('w'), nargs=2,
-        help="output files")
+    output2_parser.add_argument("output_handles", metavar="OUTPUT",
+        type=argparse.FileType('w'), nargs=2, help="output files")
 
     file_parser = argparse.ArgumentParser(add_help=False,
         parents=[input_parser, output_parser])
@@ -558,7 +556,18 @@ def main():
         help="quality score (%(type)s default=%(default)s)")
 
     seq_parser = argparse.ArgumentParser(add_help=False)
-    seq_parser.add_argument("SEQ", type=str, help="a sequence")
+    seq_parser.add_argument("sequence", metavar="SEQ", type=str,
+        help="a sequence (%(type)s)")
+
+    range_parser = argparse.ArgumentParser(add_help=False)
+    range_parser.add_argument("first", metavar="FIRST", type=int,
+        help="first base of the selection (%(type)s)")
+    range_parser.add_argument("last", metavar="LAST", type=int,
+        help="last base of the selection (%(type)s)")
+
+    name_parser = argparse.ArgumentParser(add_help=False)
+    name_parser.add_argument("name", metavar="ACCNO", type=str,
+        help="accession number")
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -568,81 +577,82 @@ def main():
 
     parser_sanitise = subparsers.add_parser("sanitise",
         parents=[file_parser], description=doc_split(sanitise))
+    parser_sanitise.set_defaults(func=sanitise)
 
     parser_fa2fq = subparsers.add_parser("fa2fq",
         parents=[file_parser, qual_parser], description=doc_split(fa2fq))
+    parser_fa2fq.set_defaults(func=fa2fq)
 
     parser_fq2fa = subparsers.add_parser("fq2fa", parents=[file_parser],
         description=doc_split(fq2fa))
+    parser_fq2fa.set_defaults(func=fq2fa)
 
     parser_add = subparsers.add_parser("add", parents=[file_parser, seq_parser,
         qual_parser], description=doc_split(add))
+    parser_add.set_defaults(func=add)
 
     parser_aln = subparsers.add_parser("aln", parents=[input2_parser],
         description=doc_split(aln))
+    parser_aln.set_defaults(func=aln)
 
     parser_len = subparsers.add_parser("len", parents=[input_parser],
         description=doc_split(length))
+    parser_len.set_defaults(func=length)
 
     parser_restrict = subparsers.add_parser("restrict", parents=[input_parser],
         description=doc_split(restrict))
-    parser_restrict.add_argument("-r", dest="enzyme", type=str, nargs="+",
+    parser_restrict.add_argument("-r", dest="enzymes", type=str, nargs="+",
         default=["EcoRI", "MseI"], help="restriction enzymes")
+    parser_restrict.set_defaults(func=restrict)
 
     parser_collapse = subparsers.add_parser("collapse", parents=[file_parser],
         description=doc_split(collapse_fasta))
-    parser_collapse.add_argument('-s', '--stretch', dest='stretch', default=3,
-        type=int, help='Length of the stretch (%(type)s default: %(default)s)')
+    parser_collapse.add_argument('-s', '--stretch', dest='max_stretch',
+        default=3, type=int,
+        help='Length of the stretch (%(type)s default: %(default)s)')
+    parser_collapse.set_defaults(func=collapse_fasta)
 
     parser_s2i = subparsers.add_parser("s2i", parents=[file_parser],
         description=doc_split(s2i))
+    parser_s2i.set_defaults(func=s2i)
 
     parser_tagcount = subparsers.add_parser("tagcount", parents=[input_parser,
         seq_parser], description=doc_split(count_tags))
     parser_tagcount.add_argument("-m", dest="mismatches", type=int, default=2,
         help="amount of mismatches allowed (%(type)s default=%(default)s)")
+    parser_tagcount.set_defaults(func=count_tags)
 
-    parser_select = subparsers.add_parser("select", parents=[file_parser],
-        description=doc_split(select))
-    parser_select.add_argument("FIRST", type=int,
-        help="first base of the selection (%(type)s)")
-    parser_select.add_argument("LAST", type=int,
-        help="last base of the selection (%(type)s)")
+    parser_select = subparsers.add_parser("select", parents=[file_parser,
+        range_parser], description=doc_split(select))
+    parser_select.set_defaults(func=select)
 
-    parser_rselect = subparsers.add_parser("rselect", parents=[file_parser],
-        description=doc_split(rselect))
-    parser_rselect.add_argument("NAME", type=str,
-        help="accession number")
-    parser_rselect.add_argument("FIRST", type=int,
-        help="first base of the selection (%(type)s)")
-    parser_rselect.add_argument("LAST", type=int,
-        help="last base of the selection (%(type)s)")
+    parser_rselect = subparsers.add_parser("rselect", parents=[file_parser,
+        name_parser, range_parser], description=doc_split(rselect))
+    parser_rselect.set_defaults(func=rselect)
 
-    parser_fa2gb = subparsers.add_parser("fa2gb", parents=[file_parser],
-        description=doc_split(fa2gb))
-    parser_fa2gb.add_argument("ACCNO", type=str,
-        help="GenBank accession number")
+    parser_fa2gb = subparsers.add_parser("fa2gb", parents=[file_parser,
+        name_parser], description=doc_split(fa2gb))
+    parser_fa2gb.set_defaults(func=fa2gb)
 
     parser_gb2fa = subparsers.add_parser("gb2fa", parents=[file_parser],
         description=doc_split(gb2fa))
+    parser_gb2fa.set_defaults(func=gb2fa)
 
     parser_mangle = subparsers.add_parser("mangle", parents=[file_parser],
         description=doc_split(mangle))
+    parser_mangle.set_defaults(func=mangle)
 
-    parser_gen = subparsers.add_parser("gen", parents=[output_parser],
-        description=doc_split(generate_dna))
-    parser_gen.add_argument("LENGTH", type=int,
+    parser_gen = subparsers.add_parser("gen", parents=[output_parser,
+        name_parser], description=doc_split(generate_dna))
+    parser_gen.add_argument("length", metavar="LENGTH", type=int,
         help="length of the DNA sequence")
-    parser_gen.add_argument("NAME", type=str,
-        help="name of the DNA sequence")
-    parser_gen.add_argument("DESCR", type=str,
+    parser_gen.add_argument("description", metavar="DESCR", type=str,
         help="descriptino of the DNA sequence")
+    parser_gen.set_defaults(func=generate_dna)
 
-    parser_get = subparsers.add_parser("get", parents=[output_parser],
-        description=doc_split(get_reference))
-    parser_get.add_argument("ACC", type=str,
-        help="accession number")
-    parser_get.add_argument("EMAIL", type=str,
+    parser_get = subparsers.add_parser("get", parents=[output_parser,
+        name_parser], description=doc_split(get_reference))
+    parser_get.add_argument("email", metavar="EMAIL", type=str,
         help="email address")
     parser_get.add_argument("-s", dest="start", type=int,
         help="start of the area of interest")
@@ -650,100 +660,66 @@ def main():
         help="end of the area of interest")
     parser_get.add_argument("-o", dest="orientation", type=int,
         help="orientation (1=forward, 2=reverse)")
+    parser_get.set_defaults(func=get_reference)
 
     parser_cat = subparsers.add_parser("cat", parents=[input_parser],
         description=doc_split(cat))
+    parser_cat.set_defaults(func=cat)
 
-    parser_cat = subparsers.add_parser("descr", parents=[input_parser],
+    parser_descr = subparsers.add_parser("descr", parents=[input_parser],
         description=doc_split(descr))
+    parser_descr.set_defaults(func=descr)
 
     parser_lenfilt = subparsers.add_parser("lenfilt", parents=[input_parser,
         output2_parser], description=doc_split(length_split))
     parser_lenfilt.add_argument("-l", dest="length", type=int, default=25, 
         help="length threshold (%(type)s default: %(default)s)")
+    parser_lenfilt.set_defaults(func=length_split)
 
     parser_reverse = subparsers.add_parser("reverse", parents=[file_parser],
         description=doc_split(reverse))
+    parser_reverse.set_defaults(func=reverse)
 
     parser_merge = subparsers.add_parser("merge", parents=[input2_parser,
         output_parser], description=doc_split(merge))
     parser_merge.add_argument("-f", dest="fill", type=int, default=0,
         help="Add 'N's between the reads (%(type)s default: %(default)s)")
+    parser_merge.set_defaults(func=merge)
 
-    args = parser.parse_args()
-
-    if args.subcommand == "sanitise":
-        sanitise(args.INPUT, args.OUTPUT)
-
-    if args.subcommand == "fa2fq":
-        fa2fq(args.INPUT, args.OUTPUT, args.quality)
-
-    if args.subcommand == "fq2fa":
-        fq2fa(args.INPUT, args.OUTPUT)
-
-    if args.subcommand == "add":
-        add(args.INPUT, args.OUTPUT, args.SEQ, args.quality)
+    try:
+        args = parser.parse_args()
+    except IOError, error:
+        parser.error(error)
 
     if args.subcommand == "aln":
-        for i in aln(*args.INPUT):
+        for i in aln(args.input_handles):
             print "%s %s %i" % i
 
-    if args.subcommand == "len":
-        print ' '.join(map(lambda x: str(x), length(args.INPUT)))
+    elif args.subcommand == "len":
+        print ' '.join(map(lambda x: str(x), length(args.input_handle)))
 
-    if args.subcommand == "restrict":
-        print ' '.join(map(lambda x: str(x), restrict(args.INPUT,
-            args.enzyme)))
+    elif args.subcommand == "restrict":
+        print ' '.join(map(lambda x: str(x), restrict(args.input_handle,
+            args.enzymes)))
 
-    if args.subcommand == "collapse":
-        collapses = collapse_fasta(args.INPUT, args.OUTPUT, args.stretch)
+    elif args.subcommand == "collapse":
+        print "Collapsed %i stretches longer than %i." % (collapse_fasta(
+            args.input_handle, args.output_handle, args.max_stretch),
+            args.max_stretch)
 
-        print "Collapsed %i stretches longer than %i." % (collapses,
-            args.stretch)
-    #if
+    elif args.subcommand == "s2i":
+        print "converted %i records" % s2i(args.input_handle,
+            args.output_handle)
 
-    if args.subcommand == "s2i":
-        print "converted %i records" % s2i(args.INPUT, args.OUTPUT)
+    elif args.subcommand == "tagcount":
+        print count_tags(args.input_handle, args.sequence, args.mismatches)
 
-    if args.subcommand == "tagcount":
-        print count_tags(args.INPUT, args.SEQ, args.mismatches)
-
-    if args.subcommand == "select":
-        select(args.INPUT, args.OUTPUT, args.FIRST, args.LAST)
-
-    if args.subcommand == "rselect":
-        rselect(args.INPUT, args.OUTPUT, args.NAME, args.FIRST, args.LAST)
-
-    if args.subcommand == "fa2gb":
-        fa2gb(args.INPUT, args.OUTPUT, args.ACCNO)
-
-    if args.subcommand == "gb2fa":
-        gb2fa(args.INPUT, args.OUTPUT)
-
-    if args.subcommand == "mangle":
-        mangle(args.INPUT, args.OUTPUT)
-
-    if args.subcommand == "gen":
-        generate_dna(args.LENGTH, args.OUTPUT, args.NAME, args.DESCR)
-
-    if args.subcommand == "get":
-        get_reference(args.ACC, args.EMAIL, args.OUTPUT, args.start, args.stop,
-            args.orientation)
-
-    if args.subcommand == "cat":
-        cat(args.INPUT)
-
-    if args.subcommand == "descr":
-        descr(args.INPUT)
-
-    if args.subcommand == "lenfilt":
-        length_split(args.INPUT, args.OUTPUT, args.length)
-
-    if args.subcommand == "reverse":
-        reverse(args.INPUT, args.OUTPUT)
-
-    if args.subcommand == "merge":
-        merge(args.INPUT, args.OUTPUT, args.fill)
+    else:
+        try:
+            args.func(**{k: v for k, v in vars(args).items()
+                if k not in ("func", "subcommand")})
+        except ValueError, error:
+            parser.error(error)
 #main
 
 if __name__ == "__main__":
