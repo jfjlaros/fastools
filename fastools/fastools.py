@@ -39,66 +39,66 @@ def guess_file_type(handle):
     return "fastq"
 #guess_file_type
 
-def sanitise(inputHandle, outputHandle):
+def sanitise(input_handle, output_handle):
     """
     Convert a FASTA/FASTQ file to a standard FASTA/FASTQ file.
 
-    @arg inputHandle: Open readable handle to a FASTA/FASTQ file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTA/FASTQ file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA/FASTQ file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTA/FASTQ file.
+    @type output_handle: stream
     """
-    fileFormat = guess_file_type(inputHandle)
+    fileFormat = guess_file_type(input_handle)
 
-    for record in SeqIO.parse(inputHandle, fileFormat):
-        SeqIO.write(record, outputHandle, fileFormat)
+    for record in SeqIO.parse(input_handle, fileFormat):
+        SeqIO.write(record, output_handle, fileFormat)
 #sanitise
 
-def fa2fq(inputHandle, outputHandle, quality):
+def fa2fq(input_handle, output_handle, quality):
     """
     Convert a FASTA file to a FASTQ file.
 
-    @arg inputHandle: Open readable handle to a FASTA file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTQ file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTQ file.
+    @type output_handle: stream
     @arg quality: Quality score.
     @type quality: int
     """
-    for record in SeqIO.parse(inputHandle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         record.letter_annotations = {"phred_quality":
             [quality] * len(record.seq)}
-        SeqIO.write(record, outputHandle, "fastq")
+        SeqIO.write(record, output_handle, "fastq")
     #for
 #fa2fq
 
-def fq2fa(inputHandle, outputHandle):
+def fq2fa(input_handle, output_handle):
     """
     Convert a FASTQ file to a FASTA file.
 
-    @arg inputHandle: Open readable handle to a FASTQ file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTA file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTQ file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTA file.
+    @type output_handle: stream
     """
     try:
-        for record in SeqIO.parse(inputHandle, "fastq"):
-            SeqIO.write(record, outputHandle, "fasta")
+        for record in SeqIO.parse(input_handle, "fastq"):
+            SeqIO.write(record, output_handle, "fasta")
     except ValueError, error:
         print "Error: %s" % error
         emptyRecord = SeqRecord(Seq.Seq(""), "", "", "")
-        SeqIO.write(emptyRecord, outputHandle, "fasta")
+        SeqIO.write(emptyRecord, output_handle, "fasta")
     #except
 #fq2fa
 
-def add(inputHandle, outputHandle, sequence, quality):
+def add(input_handle, output_handle, sequence, quality):
     """
     Add a sequence to the 5' end of each read in a FASTQ file.
 
-    @arg inputHandle: Open readable handle to a FASTQ file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTQ file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTQ file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTQ file.
+    @type output_handle: stream
     @arg sequence: Sequence to be added to the 5' end of the read.
     @type sequence: str
     @arg quality: Quality score.
@@ -106,31 +106,31 @@ def add(inputHandle, outputHandle, sequence, quality):
     """
     addition_q = [quality] * len(sequence)
 
-    for record in SeqIO.parse(inputHandle, "fastq"):
+    for record in SeqIO.parse(input_handle, "fastq"):
         qual = record.letter_annotations["phred_quality"]
         record.letter_annotations = {}
         record.seq = sequence + record.seq
         record.letter_annotations = {"phred_quality": addition_q + qual}
-        SeqIO.write(record, outputHandle, "fastq")
+        SeqIO.write(record, output_handle, "fastq")
     #for
 #add
 
-def aln(fastaHandle1, fastaHandle2):
+def aln(fasta_handle_1, fasta_handle_2):
     """
     Calculate the Levenshtein distance between two FASTA files.
 
-    @arg fastaHandle1: Open readable handle to a FASTA file.
-    @type fastaHandle1: stream
-    @arg fastaHandle2: Open readable handle to a FASTA file.
-    @type fastaHandle2: stream
+    @arg fasta_handle_1: Open readable handle to a FASTA file.
+    @type fasta_handle_1: stream
+    @arg fasta_handle_2: Open readable handle to a FASTA file.
+    @type fasta_handle_2: stream
 
     @returns: List of distances.
     @rtype: list[tuple(str, str, int)]
     """
     distances = []
 
-    for i in SeqIO.parse(fastaHandle1, "fasta"):
-        for j in SeqIO.parse(fastaHandle2, "fasta"):
+    for i in SeqIO.parse(fasta_handle_1, "fasta"):
+        for j in SeqIO.parse(fasta_handle_2, "fasta"):
             distances.append((i.name, j.name,
                 Levenshtein.distance(str(i.seq), str(j.seq))))
 
@@ -181,15 +181,15 @@ def restrict(handle, enzymes):
     return lengths
 #restrict
 
-def collapse(word, maxStretch):
+def collapse(word, max_stretch):
     """
     Collapse stretches of single letters in a word that exceed a certain
     length.
 
     @arg word: Non empty input string.
     @type word: str
-    @arg maxStretch: Maximum stretch of single letters, must be larger than 1.
-    @type maxStretch: int
+    @arg max_stretch: Maximum stretch of single letters, must be larger than 1.
+    @type max_stretch: int
 
     @returns: The collapsed word and the number of collapsed stretches.
     @rtype: tuple(srt, int)
@@ -203,23 +203,23 @@ def collapse(word, maxStretch):
             stretch += 1
         else:
             stretch = 0
-        if stretch < maxStretch:
+        if stretch < max_stretch:
             collapsedWord += word[i]
-        if stretch == maxStretch:
+        if stretch == max_stretch:
             numberOfCollapses += 1
     #for
 
     return collapsedWord, numberOfCollapses
 #collapse
 
-def collapseFasta(inputHandle, outputHandle, stretch):
+def collapseFasta(input_handle, output_handle, stretch):
     """
     Remove all mononucleotide stretches from a FASTA file.
 
-    @arg inputHandle: Open readable handle to a FASTA file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writeable handle to a FASTA file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA file.
+    @type input_handle: stream
+    @arg output_handle: Open writeable handle to a FASTA file.
+    @type output_handle: stream
     @arg stretch: Maximum stretch of single letters, must be larger than 1.
     @type stretch: int
 
@@ -228,34 +228,34 @@ def collapseFasta(inputHandle, outputHandle, stretch):
     """
     totalCollapses = 0
 
-    for record in SeqIO.parse(inputHandle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         sequence, collapses = collapse(record.seq, stretch)
         record.seq = Seq.Seq(sequence)
-        SeqIO.write(record, outputHandle, "fasta")
+        SeqIO.write(record, output_handle, "fasta")
         totalCollapses += collapses
     #for
 
     return totalCollapses
 #collapseFasta
 
-def s2i(inputHandle, outputHandle):
+def s2i(input_handle, output_handle):
     """
     Convert sanger FASTQ to illumina FASTQ.
 
-    @arg inputHandle: Open readable handle to a FASTQ file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writeable handle to a FASTQ file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTQ file.
+    @type input_handle: stream
+    @arg output_handle: Open writeable handle to a FASTQ file.
+    @type output_handle: stream
     """
-    return SeqIO.convert(inputHandle, "fastq", outputHandle, "fastq-illumina")
+    return SeqIO.convert(input_handle, "fastq", output_handle, "fastq-illumina")
 #s2i
 
-def countTags(inputHandle, tag, mismatches):
+def countTags(input_handle, tag, mismatches):
     """
     Count tags in a FASTA file.
 
-    @arg inputHandle: Open readable handle to a FASTA file.
-    @type inputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA file.
+    @type input_handle: stream
     @arg tag: The tag that needs to be counted.
     @type tag: str
     @arg mismatches: The number of mismatches allowed.
@@ -266,7 +266,7 @@ def countTags(inputHandle, tag, mismatches):
     """
     count = 0
 
-    for record in SeqIO.parse(inputHandle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         alignment = pairwise2.align.localms(str(record.seq),
             tag, 1, -1, 0, -1)
 
@@ -277,36 +277,36 @@ def countTags(inputHandle, tag, mismatches):
     return count
 #countTags
 
-def select(inputHandle, outputHandle, first, last):
+def select(input_handle, output_handle, first, last):
     """
     Select a substring from every read.
     Positions are one-based and inclusive.
 
-    @arg inputHandle: Open readable handle to a FASTA/FASTQ file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTA/FASTQ file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA/FASTQ file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTA/FASTQ file.
+    @type output_handle: stream
     @arg first: First base of the selection.
     @type first: int
     @arg last: Last base of the selection.
     @type last: int
     """
-    fileFormat = guess_file_type(inputHandle)
+    fileFormat = guess_file_type(input_handle)
     realFirst = first - 1
 
-    for record in SeqIO.parse(inputHandle, fileFormat):
-        SeqIO.write([record[realFirst:last]], outputHandle, fileFormat)
+    for record in SeqIO.parse(input_handle, fileFormat):
+        SeqIO.write([record[realFirst:last]], output_handle, fileFormat)
 #select
 
-def rselect(inputHandle, outputHandle, name, first, last):
+def rselect(input_handle, output_handle, name, first, last):
     """
     Select a substring from every read.
     Positions are one-based and inclusive.
 
-    @arg inputHandle: Open readable handle to a FASTA/FASTQ file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTA/FASTQ file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA/FASTQ file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTA/FASTQ file.
+    @type output_handle: stream
     @arg name: Accession number.
     @type name: str
     @arg first: First base of the selection.
@@ -314,10 +314,10 @@ def rselect(inputHandle, outputHandle, name, first, last):
     @arg last: Last base of the selection.
     @type last: int
     """
-    fileFormat = guess_file_type(inputHandle)
+    fileFormat = guess_file_type(input_handle)
     realFirst = first - 1
 
-    for record in SeqIO.parse(inputHandle, fileFormat):
+    for record in SeqIO.parse(input_handle, fileFormat):
         fullAccNo = record.name
 
         if '|' in record.name:
@@ -326,52 +326,52 @@ def rselect(inputHandle, outputHandle, name, first, last):
         accno = fullAccNo.split('.')[0]
 
         if accno == name:
-            SeqIO.write([record[realFirst:last]], outputHandle, fileFormat)
+            SeqIO.write([record[realFirst:last]], output_handle, fileFormat)
     #for
 #rselect
 
-def fa2gb(inputHandle, outputHandle, accno):
+def fa2gb(input_handle, output_handle, accno):
     """
     Convert a FASTA file to a GenBank file.
 
-    @arg inputHandle: Open readable handle to a FASTA file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a GenBank file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a GenBank file.
+    @type output_handle: stream
     @arg accno: A GenBank accession number.
     @type accno: str
     """
-    for record in SeqIO.parse(inputHandle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         record.seq.alphabet = IUPAC.unambiguous_dna
         record.id = accno
         record.name = accno
-        SeqIO.write(record, outputHandle, "genbank")
+        SeqIO.write(record, output_handle, "genbank")
     #for
 #fa2gb
 
-def gb2fa(inputHandle, outputHandle):
+def gb2fa(input_handle, output_handle):
     """
     Convert a GenBank file to a FASTA file.
 
-    @arg inputHandle: Open readable handle to a GenBank file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTA file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a GenBank file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTA file.
+    @type output_handle: stream
     """
-    for record in SeqIO.parse(inputHandle, "genbank"):
-        SeqIO.write(record, outputHandle, "fasta")
+    for record in SeqIO.parse(input_handle, "genbank"):
+        SeqIO.write(record, output_handle, "fasta")
 #gb2fa
 
-def mangle(inputHandle, outputHandle):
+def mangle(input_handle, output_handle):
     """
     Calculate the complement (not reverse-complement) of a FASTA sequence.
 
-    @arg inputHandle: Open readable handle to a FASTA file.
-    @type inputHandle: stream
-    @arg outputHandle: Open writable handle to a FASTA file.
-    @type outputHandle: stream
+    @arg input_handle: Open readable handle to a FASTA file.
+    @type input_handle: stream
+    @arg output_handle: Open writable handle to a FASTA file.
+    @type output_handle: stream
     """
-    for record in SeqIO.parse(inputHandle, "fasta"):
+    for record in SeqIO.parse(input_handle, "fasta"):
         seq = ""
 
         for i in record.seq:
@@ -388,7 +388,7 @@ def mangle(inputHandle, outputHandle):
         newRecord = SeqRecord(Seq.Seq(seq), record.id + 'C', "",
             "Complement (not reverse-complement) of the non-N part of %s" %
             record.id)
-        SeqIO.write(newRecord, outputHandle, "fasta")
+        SeqIO.write(newRecord, output_handle, "fasta")
     #for
 #mangle
 
@@ -415,7 +415,7 @@ def generateDNA(size, handle, name, description):
     SeqIO.write(record, handle, "fasta")
 #generateDNA
 
-def getReference(acc, email, outputHandle, start=0, stop=0, orientation=0):
+def getReference(acc, email, output_handle, start=0, stop=0, orientation=0):
     """
     Retrieve a reference sequence and find the location of a specific gene.
 
@@ -423,8 +423,8 @@ def getReference(acc, email, outputHandle, start=0, stop=0, orientation=0):
     @type acc: str
     @arg email: An email address.
     @type email: str
-    @arg outputHandle: An open writable handle.
-    @type outputHandle: stream
+    @arg output_handle: An open writable handle.
+    @type output_handle: stream
     @arg start: Start of the area of interest.
     @type start: int
     @arg stop: End of the area of interest.
@@ -445,7 +445,7 @@ def getReference(acc, email, outputHandle, start=0, stop=0, orientation=0):
         return
     #except
 
-    outputHandle.write(handle.read())
+    output_handle.write(handle.read())
 #getReference
 
 def cat(handle):
@@ -470,24 +470,24 @@ def descr(handle):
         print record.description
 #descr
 
-def lengthSplit(inputHandle, outputHandles, length):
+def lengthSplit(input_handle, output_handles, length):
     """
     Split a fasta/fastq file on length.
 
-    @arg inputHandle: Open readable handle to a fasta/fastq file.
-    @type inputHandle: stream
-    @arg outputHandles: List of open writable handles to fasta/fastq files.
-    @type outputHandles: list[stream]
+    @arg input_handle: Open readable handle to a fasta/fastq file.
+    @type input_handle: stream
+    @arg output_handles: List of open writable handles to fasta/fastq files.
+    @type output_handles: list[stream]
     @arg length: Length threshold.
     @type length: int
     """
-    fileType = guess_file_type(inputHandle)
+    fileType = guess_file_type(input_handle)
 
-    for record in SeqIO.parse(inputHandle, fileType):
+    for record in SeqIO.parse(input_handle, fileType):
         if len(record.seq) >= length:
-            SeqIO.write([record], outputHandles[0], fileType)
+            SeqIO.write([record], output_handles[0], fileType)
         else:
-            SeqIO.write([record], outputHandles[1], fileType)
+            SeqIO.write([record], output_handles[1], fileType)
 #lengthSplit
 
 def reverse(input_handle, output_handle):
