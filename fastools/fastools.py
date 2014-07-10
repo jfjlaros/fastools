@@ -20,11 +20,11 @@ def guess_file_format(handle):
     We assume that the stream is rewinded before use, after use, the input
     stream will be rewinded.
 
-    @arg handle: Open readable handle to an NGS data file.
-    @type handle: stream
+    :arg handle: Open readable handle to an NGS data file.
+    :type handle: stream
 
-    @returns: Either "fasta" or "fastq".
-    @rtype: str
+    :return: Either "fasta" or "fastq".
+    :rtype: str
     """
     if handle.isatty():
         sys.stderr.write("Cannot deterine file type in stream, assuming FASTA")
@@ -43,10 +43,10 @@ def sanitise(input_handle, output_handle):
     """
     Convert a FASTA/FASTQ file to a standard FASTA/FASTQ file.
 
-    @arg input_handle: Open readable handle to a FASTA/FASTQ file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTA/FASTQ file.
-    @type output_handle: stream
+    :arg input_handle: Open readable handle to a FASTA/FASTQ file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTA/FASTQ file.
+    :type output_handle: stream
     """
     file_format = guess_file_format(input_handle)
 
@@ -58,12 +58,12 @@ def fa2fq(input_handle, output_handle, quality):
     """
     Convert a FASTA file to a FASTQ file.
 
-    @arg input_handle: Open readable handle to a FASTA file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTQ file.
-    @type output_handle: stream
-    @arg quality: Quality score.
-    @type quality: int
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTQ file.
+    :type output_handle: stream
+    :arg quality: Quality score.
+    :type quality: int
     """
     for record in SeqIO.parse(input_handle, "fasta"):
         record.letter_annotations = {"phred_quality":
@@ -76,10 +76,10 @@ def fq2fa(input_handle, output_handle):
     """
     Convert a FASTQ file to a FASTA file.
 
-    @arg input_handle: Open readable handle to a FASTQ file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTA file.
-    @type output_handle: stream
+    :arg input_handle: Open readable handle to a FASTQ file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTA file.
+    :type output_handle: stream
     """
     try:
         for record in SeqIO.parse(input_handle, "fastq"):
@@ -95,14 +95,14 @@ def add(input_handle, output_handle, sequence, quality):
     """
     Add a sequence to the 5' end of each read in a FASTQ file.
 
-    @arg input_handle: Open readable handle to a FASTQ file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTQ file.
-    @type output_handle: stream
-    @arg sequence: Sequence to be added to the 5' end of the read.
-    @type sequence: str
-    @arg quality: Quality score.
-    @type quality: int
+    :arg input_handle: Open readable handle to a FASTQ file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTQ file.
+    :type output_handle: stream
+    :arg sequence: Sequence to be added to the 5' end of the read.
+    :type sequence: str
+    :arg quality: Quality score.
+    :type quality: int
     """
     addition_q = [quality] * len(sequence)
 
@@ -119,13 +119,13 @@ def aln(fasta_handle_1, fasta_handle_2):
     """
     Calculate the Levenshtein distance between two FASTA files.
 
-    @arg fasta_handle_1: Open readable handle to a FASTA file.
-    @type fasta_handle_1: stream
-    @arg fasta_handle_2: Open readable handle to a FASTA file.
-    @type fasta_handle_2: stream
+    :arg fasta_handle_1: Open readable handle to a FASTA file.
+    :type fasta_handle_1: stream
+    :arg fasta_handle_2: Open readable handle to a FASTA file.
+    :type fasta_handle_2: stream
 
-    @returns: List of distances.
-    @rtype: list[tuple(str, str, int)]
+    :return: List of distances.
+    :rtype: list[tuple(str, str, int)]
     """
     distances = []
 
@@ -141,11 +141,11 @@ def length(handle):
     """
     Report the lengths of all FASTA records in a file.
 
-    @arg handle: Open readable handle to a FASTA file.
-    @type handle: stream
+    :arg handle: Open readable handle to a FASTA file.
+    :type handle: stream
 
-    @returns: List of lengths.
-    @rtype: list[int]
+    :return: List of lengths.
+    :rtype: list[int]
     """
     lengths = []
 
@@ -159,13 +159,13 @@ def restrict(handle, enzymes):
     """
     Fragment a genome with restriction enzymes.
 
-    @arg handle: Open readable handle to a FASTA file.
-    @type handle: stream
-    @arg enzymes: List of restiction enzymes.
-    @type enzymes: list(str)
+    :arg handle: Open readable handle to a FASTA file.
+    :type handle: stream
+    :arg enzymes: List of restiction enzymes.
+    :type enzymes: list(str)
 
-    @returns: List of fragment sizes.
-    @rtype: list[int]
+    :return: List of fragment sizes.
+    :rtype: list[int]
     """
     restriction_batch = Restriction.RestrictionBatch(enzymes)
     lengths = []
@@ -186,13 +186,13 @@ def collapse(word, max_stretch):
     Collapse stretches of single letters in a word that exceed a certain
     length.
 
-    @arg word: Non empty input string.
-    @type word: str
-    @arg max_stretch: Maximum stretch of single letters, must be larger than 1.
-    @type max_stretch: int
+    :arg word: Non empty input string.
+    :type word: str
+    :arg max_stretch: Maximum stretch of single letters, must be larger than 1.
+    :type max_stretch: int
 
-    @returns: The collapsed word and the number of collapsed stretches.
-    @rtype: tuple(srt, int)
+    :return: The collapsed word and the number of collapsed stretches.
+    :rtype: tuple(srt, int)
     """
     stretch = 0
     collapsed_word = word[0]
@@ -216,15 +216,15 @@ def collapse_fasta(input_handle, output_handle, stretch):
     """
     Remove all mononucleotide stretches from a FASTA file.
 
-    @arg input_handle: Open readable handle to a FASTA file.
-    @type input_handle: stream
-    @arg output_handle: Open writeable handle to a FASTA file.
-    @type output_handle: stream
-    @arg stretch: Maximum stretch of single letters, must be larger than 1.
-    @type stretch: int
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
+    :arg output_handle: Open writeable handle to a FASTA file.
+    :type output_handle: stream
+    :arg stretch: Maximum stretch of single letters, must be larger than 1.
+    :type stretch: int
 
-    @returns: Number of collapsed stretches.
-    @rtype: int
+    :return: Number of collapsed stretches.
+    :rtype: int
     """
     total_collapses = 0
 
@@ -242,10 +242,10 @@ def s2i(input_handle, output_handle):
     """
     Convert sanger FASTQ to illumina FASTQ.
 
-    @arg input_handle: Open readable handle to a FASTQ file.
-    @type input_handle: stream
-    @arg output_handle: Open writeable handle to a FASTQ file.
-    @type output_handle: stream
+    :arg input_handle: Open readable handle to a FASTQ file.
+    :type input_handle: stream
+    :arg output_handle: Open writeable handle to a FASTQ file.
+    :type output_handle: stream
     """
     return SeqIO.convert(input_handle, "fastq", output_handle,
         "fastq-illumina")
@@ -255,15 +255,15 @@ def count_tags(input_handle, tag, mismatches):
     """
     Count tags in a FASTA file.
 
-    @arg input_handle: Open readable handle to a FASTA file.
-    @type input_handle: stream
-    @arg tag: The tag that needs to be counted.
-    @type tag: str
-    @arg mismatches: The number of mismatches allowed.
-    @type mismatches: int
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
+    :arg tag: The tag that needs to be counted.
+    :type tag: str
+    :arg mismatches: The number of mismatches allowed.
+    :type mismatches: int
 
-    @returns: Number of occurrences.
-    @rtype: int
+    :return: Number of occurrences.
+    :rtype: int
     """
     count = 0
 
@@ -283,14 +283,14 @@ def select(input_handle, output_handle, first, last):
     Select a substring from every read.
     Positions are one-based and inclusive.
 
-    @arg input_handle: Open readable handle to a FASTA/FASTQ file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTA/FASTQ file.
-    @type output_handle: stream
-    @arg first: First base of the selection.
-    @type first: int
-    @arg last: Last base of the selection.
-    @type last: int
+    :arg input_handle: Open readable handle to a FASTA/FASTQ file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTA/FASTQ file.
+    :type output_handle: stream
+    :arg first: First base of the selection.
+    :type first: int
+    :arg last: Last base of the selection.
+    :type last: int
     """
     file_format = guess_file_format(input_handle)
     real_first = first - 1
@@ -304,16 +304,16 @@ def rselect(input_handle, output_handle, name, first, last):
     Select a substring from every read.
     Positions are one-based and inclusive.
 
-    @arg input_handle: Open readable handle to a FASTA/FASTQ file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTA/FASTQ file.
-    @type output_handle: stream
-    @arg name: Accession number.
-    @type name: str
-    @arg first: First base of the selection.
-    @type first: int
-    @arg last: Last base of the selection.
-    @type last: int
+    :arg input_handle: Open readable handle to a FASTA/FASTQ file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTA/FASTQ file.
+    :type output_handle: stream
+    :arg name: Accession number.
+    :type name: str
+    :arg first: First base of the selection.
+    :type first: int
+    :arg last: Last base of the selection.
+    :type last: int
     """
     file_format = guess_file_format(input_handle)
     real_first = first - 1
@@ -335,12 +335,12 @@ def fa2gb(input_handle, output_handle, accno):
     """
     Convert a FASTA file to a GenBank file.
 
-    @arg input_handle: Open readable handle to a FASTA file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a GenBank file.
-    @type output_handle: stream
-    @arg accno: A GenBank accession number.
-    @type accno: str
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a GenBank file.
+    :type output_handle: stream
+    :arg accno: A GenBank accession number.
+    :type accno: str
     """
     for record in SeqIO.parse(input_handle, "fasta"):
         record.seq.alphabet = IUPAC.unambiguous_dna
@@ -354,10 +354,10 @@ def gb2fa(input_handle, output_handle):
     """
     Convert a GenBank file to a FASTA file.
 
-    @arg input_handle: Open readable handle to a GenBank file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTA file.
-    @type output_handle: stream
+    :arg input_handle: Open readable handle to a GenBank file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTA file.
+    :type output_handle: stream
     """
     for record in SeqIO.parse(input_handle, "genbank"):
         SeqIO.write(record, output_handle, "fasta")
@@ -367,10 +367,10 @@ def mangle(input_handle, output_handle):
     """
     Calculate the complement (not reverse-complement) of a FASTA sequence.
 
-    @arg input_handle: Open readable handle to a FASTA file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a FASTA file.
-    @type output_handle: stream
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a FASTA file.
+    :type output_handle: stream
     """
     for record in SeqIO.parse(input_handle, "fasta"):
         seq = ""
@@ -397,14 +397,14 @@ def generate_dna(size, handle, name, description):
     """
     Generate a DNA sequence in FASTA format.
 
-    @arg size: Length of the DNA sequence.
-    @arg size: int
-    @arg handle: Open writable handle to a FASTA file.
-    @type handle: stream
-    @arg name: Name of the DNA sequence.
-    @arg name: str
-    @arg description: Description of the DNA sequence.
-    @arg description: str
+    :arg size: Length of the DNA sequence.
+    :arg size: int
+    :arg handle: Open writable handle to a FASTA file.
+    :type handle: stream
+    :arg name: Name of the DNA sequence.
+    :arg name: str
+    :arg description: Description of the DNA sequence.
+    :arg description: str
     """
     dna = ['A', 'C', 'G', 'T']
     seq = ""
@@ -420,18 +420,18 @@ def get_reference(acc, email, output_handle, start=0, stop=0, orientation=0):
     """
     Retrieve a reference sequence and find the location of a specific gene.
 
-    @arg acc: An accession number.
-    @type acc: str
-    @arg email: An email address.
-    @type email: str
-    @arg output_handle: An open writable handle.
-    @type output_handle: stream
-    @arg start: Start of the area of interest.
-    @type start: int
-    @arg stop: End of the area of interest.
-    @type stop: int
-    @arg orientation: Orientation (1=forward, 2=reverse).
-    @type orientation: int
+    :arg acc: An accession number.
+    :type acc: str
+    :arg email: An email address.
+    :type email: str
+    :arg output_handle: An open writable handle.
+    :type output_handle: stream
+    :arg start: Start of the area of interest.
+    :type start: int
+    :arg stop: End of the area of interest.
+    :type stop: int
+    :arg orientation: Orientation (1=forward, 2=reverse).
+    :type orientation: int
     """
     Entrez.email = email
 
@@ -453,8 +453,8 @@ def cat(handle):
     """
     Return the sequence content of a FASTA file.
 
-    @arg handle: Open readable handle to a FASTA file.
-    @type handle: stream
+    :arg handle: Open readable handle to a FASTA file.
+    :type handle: stream
     """
     for record in SeqIO.parse(handle, "fasta"):
         print record.seq
@@ -464,8 +464,8 @@ def descr(handle):
     """
     Return the description of all records in a FASTA file.
 
-    @arg handle: Open readable handle to a FASTA file.
-    @type handle: stream
+    :arg handle: Open readable handle to a FASTA file.
+    :type handle: stream
     """
     for record in SeqIO.parse(handle, "fasta"):
         print record.description
@@ -475,12 +475,12 @@ def length_split(input_handle, output_handles, length):
     """
     Split a fasta/fastq file on length.
 
-    @arg input_handle: Open readable handle to a fasta/fastq file.
-    @type input_handle: stream
-    @arg output_handles: List of open writable handles to fasta/fastq files.
-    @type output_handles: list[stream]
-    @arg length: Length threshold.
-    @type length: int
+    :arg input_handle: Open readable handle to a fasta/fastq file.
+    :type input_handle: stream
+    :arg output_handles: List of open writable handles to fasta/fastq files.
+    :type output_handles: list[stream]
+    :arg length: Length threshold.
+    :type length: int
     """
     file_format = guess_file_format(input_handle)
 
@@ -495,10 +495,10 @@ def reverse(input_handle, output_handle):
     """
     Make the reverse complement a fasta/fastq file.
 
-    @arg input_handle: Open readable handle to a fasta/fastq file.
-    @type input_handle: stream
-    @arg output_handle: Open writable handle to a fasta/fastq file.
-    @type output_handle: stream
+    :arg input_handle: Open readable handle to a fasta/fastq file.
+    :type input_handle: stream
+    :arg output_handle: Open writable handle to a fasta/fastq file.
+    :type output_handle: stream
     """
     file_format = guess_file_format(input_handle)
 
@@ -514,12 +514,12 @@ def merge(input_handles, output_handle, fill):
     """
     Merge two fasta files.
 
-    @arg input_handle: List of open readable handle to fasta/fastq files.
-    @type input_handle: list(stream)
-    @arg output_handle: Open writable handle to a fasta/fastq file.
-    @type output_handle: stream
-    @arg fill: Amount of 'N's to be added between the reads.
-    @type fill: int
+    :arg input_handle: List of open readable handle to fasta/fastq files.
+    :type input_handle: list(stream)
+    :arg output_handle: Open writable handle to a fasta/fastq file.
+    :type output_handle: stream
+    :arg fill: Amount of 'N's to be added between the reads.
+    :type fill: int
     """
     for records in itertools.izip(SeqIO.parse(input_handles[0], "fasta"),
             SeqIO.parse(input_handles[1], "fasta")):
