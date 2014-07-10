@@ -212,7 +212,7 @@ def collapse(word, max_stretch):
     return collapsed_word, number_of_collapses
 #collapse
 
-def collapseFasta(input_handle, output_handle, stretch):
+def collapse_fasta(input_handle, output_handle, stretch):
     """
     Remove all mononucleotide stretches from a FASTA file.
 
@@ -236,7 +236,7 @@ def collapseFasta(input_handle, output_handle, stretch):
     #for
 
     return total_collapses
-#collapseFasta
+#collapse_fasta
 
 def s2i(input_handle, output_handle):
     """
@@ -251,7 +251,7 @@ def s2i(input_handle, output_handle):
         "fastq-illumina")
 #s2i
 
-def countTags(input_handle, tag, mismatches):
+def count_tags(input_handle, tag, mismatches):
     """
     Count tags in a FASTA file.
 
@@ -276,7 +276,7 @@ def countTags(input_handle, tag, mismatches):
     #for
 
     return count
-#countTags
+#count_tags
 
 def select(input_handle, output_handle, first, last):
     """
@@ -393,7 +393,7 @@ def mangle(input_handle, output_handle):
     #for
 #mangle
 
-def generateDNA(size, handle, name, description):
+def generate_dna(size, handle, name, description):
     """
     Generate a DNA sequence in FASTA format.
 
@@ -414,9 +414,9 @@ def generateDNA(size, handle, name, description):
 
     record = SeqRecord(Seq.Seq(seq), name, "", description)
     SeqIO.write(record, handle, "fasta")
-#generateDNA
+#generate_dna
 
-def getReference(acc, email, output_handle, start=0, stop=0, orientation=0):
+def get_reference(acc, email, output_handle, start=0, stop=0, orientation=0):
     """
     Retrieve a reference sequence and find the location of a specific gene.
 
@@ -447,7 +447,7 @@ def getReference(acc, email, output_handle, start=0, stop=0, orientation=0):
     #except
 
     output_handle.write(handle.read())
-#getReference
+#get_reference
 
 def cat(handle):
     """
@@ -471,7 +471,7 @@ def descr(handle):
         print record.description
 #descr
 
-def lengthSplit(input_handle, output_handles, length):
+def length_split(input_handle, output_handles, length):
     """
     Split a fasta/fastq file on length.
 
@@ -489,7 +489,7 @@ def lengthSplit(input_handle, output_handles, length):
             SeqIO.write([record], output_handles[0], file_format)
         else:
             SeqIO.write([record], output_handles[1], file_format)
-#lengthSplit
+#length_split
 
 def reverse(input_handle, output_handle):
     """
@@ -590,7 +590,7 @@ def main():
         default=["EcoRI", "MseI"], help="restriction enzymes")
 
     parser_collapse = subparsers.add_parser("collapse", parents=[file_parser],
-        description=doc_split(collapseFasta))
+        description=doc_split(collapse_fasta))
     parser_collapse.add_argument('-s', '--stretch', dest='stretch', default=3,
         type=int, help='Length of the stretch (%(type)s default: %(default)s)')
 
@@ -598,7 +598,7 @@ def main():
         description=doc_split(s2i))
 
     parser_tagcount = subparsers.add_parser("tagcount", parents=[input_parser,
-        seq_parser], description=doc_split(countTags))
+        seq_parser], description=doc_split(count_tags))
     parser_tagcount.add_argument("-m", dest="mismatches", type=int, default=2,
         help="amount of mismatches allowed (%(type)s default=%(default)s)")
 
@@ -630,7 +630,7 @@ def main():
         description=doc_split(mangle))
 
     parser_gen = subparsers.add_parser("gen", parents=[output_parser],
-        description=doc_split(generateDNA))
+        description=doc_split(generate_dna))
     parser_gen.add_argument("LENGTH", type=int,
         help="length of the DNA sequence")
     parser_gen.add_argument("NAME", type=str,
@@ -639,7 +639,7 @@ def main():
         help="descriptino of the DNA sequence")
 
     parser_get = subparsers.add_parser("get", parents=[output_parser],
-        description=doc_split(getReference))
+        description=doc_split(get_reference))
     parser_get.add_argument("ACC", type=str,
         help="accession number")
     parser_get.add_argument("EMAIL", type=str,
@@ -658,7 +658,7 @@ def main():
         description=doc_split(descr))
 
     parser_lenfilt = subparsers.add_parser("lenfilt", parents=[input_parser,
-        output2_parser], description=doc_split(lengthSplit))
+        output2_parser], description=doc_split(length_split))
     parser_lenfilt.add_argument("-l", dest="length", type=int, default=25, 
         help="length threshold (%(type)s default: %(default)s)")
 
@@ -696,7 +696,7 @@ def main():
             args.enzyme)))
 
     if args.subcommand == "collapse":
-        collapses = collapseFasta(args.INPUT, args.OUTPUT, args.stretch)
+        collapses = collapse_fasta(args.INPUT, args.OUTPUT, args.stretch)
 
         print "Collapsed %i stretches longer than %i." % (collapses,
             args.stretch)
@@ -706,7 +706,7 @@ def main():
         print "converted %i records" % s2i(args.INPUT, args.OUTPUT)
 
     if args.subcommand == "tagcount":
-        print countTags(args.INPUT, args.SEQ, args.mismatches)
+        print count_tags(args.INPUT, args.SEQ, args.mismatches)
 
     if args.subcommand == "select":
         select(args.INPUT, args.OUTPUT, args.FIRST, args.LAST)
@@ -724,10 +724,10 @@ def main():
         mangle(args.INPUT, args.OUTPUT)
 
     if args.subcommand == "gen":
-        generateDNA(args.LENGTH, args.OUTPUT, args.NAME, args.DESCR)
+        generate_dna(args.LENGTH, args.OUTPUT, args.NAME, args.DESCR)
 
     if args.subcommand == "get":
-        getReference(args.ACC, args.EMAIL, args.OUTPUT, args.start, args.stop,
+        get_reference(args.ACC, args.EMAIL, args.OUTPUT, args.start, args.stop,
             args.orientation)
 
     if args.subcommand == "cat":
@@ -737,7 +737,7 @@ def main():
         descr(args.INPUT)
 
     if args.subcommand == "lenfilt":
-        lengthSplit(args.INPUT, args.OUTPUT, args.length)
+        length_split(args.INPUT, args.OUTPUT, args.length)
 
     if args.subcommand == "reverse":
         reverse(args.INPUT, args.OUTPUT)
