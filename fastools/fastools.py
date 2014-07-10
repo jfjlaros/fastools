@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
-import sys
-import random
-import urllib2
 import argparse
 import itertools
 import Levenshtein
+import urllib2
+import random
+import sys
+
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
