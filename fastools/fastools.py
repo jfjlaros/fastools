@@ -6,12 +6,10 @@ import urllib2
 import argparse
 import itertools
 import re
-import array
 import Levenshtein
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
-import numpy as np
 
 from . import docSplit, version, usage
 
@@ -540,16 +538,12 @@ def findMotif(record, motif):
     @arg motif: The sequence to be found
     @type motif: string
 
-    @returns: ndarray of starts and ends of matches in record
-    @rtype: Numpy ndarray with shape (n, 2), where n is amount of matches and each match of type [int(start), int(end)]
+    @returns: tuple of start and end of matches in record
+    @rtype: Generator of tuples
     """
     regex = re.compile(motif.strip(), re.IGNORECASE)
-    instances = array.array('I')
     for match in regex.finditer(str(record.seq)):
-        instances.append(int(match.start()))
-        instances.append(int(match.end()))
-    instances = np.array(instances)
-    return instances.reshape(len(instances)/2, 2)
+        yield (int(match.start()), int(match.end()))
 
 def faMotif2Bed(inputHandle, outputHandle, motif):
     """
@@ -563,8 +557,9 @@ def faMotif2Bed(inputHandle, outputHandle, motif):
     @type motif: string
     """
     for record in SeqIO.parse(inputHandle, "fasta"):
-        for match in findMotif(record, motif):
-            outputHandle.write("\t".join(map(str, [record.id, match[0], match[1]])) + "\n")
+        for m in findMotif(record, motif):
+            outputHandle.write("\t".join(map(str, [record.id, m[0], m[1]]))
+                               + "\n")
 
 def main():
     """
@@ -706,10 +701,11 @@ def main():
     parser_merge.add_argument("-f", dest="fill", type=int, default=0,
         help="Add 'N's between the reads (%(type)s default: %(default)s)")
 
-    parser_faMotif2Bed = subparsers.add_parser("famotif2bed", parents=[file_parser],
-                                               help="Find instances of specific sequences in a fasta file \
-                                                    and write the output to a bed file")
-    parser_faMotif2Bed.add_argument('--motif', help="The sequence to be found")
+    parser_faMot2Bed = subparsers.add_parser("famotif2bed",
+                                             parents=[file_parser],
+                                             description=docSplit(faMotif2Bed))
+    parser_faMot2Bed.add_argument('--motif', help="The sequence to be found",
+                                  type=str, required=True)
 
     args = parser.parse_args()
 
