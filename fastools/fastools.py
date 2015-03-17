@@ -119,7 +119,7 @@ def aln(input_handles):
     """
     Calculate the Levenshtein distance between two FASTA files.
 
-    :arg input_handles: Open readable handles to a FASTA files.
+    :arg input_handles: Open readable handles to FASTA files.
     :type input_handles: list[stream]
 
     :return: List of distances.
@@ -134,6 +134,31 @@ def aln(input_handles):
 
     return distances
 #aln
+
+def maln(input_handle):
+    """
+    Calculate the Hamming distance between all sequences in a FASTA file.
+
+    :arg input_handle: Open readable handle to a FASTA file.
+    :type input_handle: stream
+
+    :return: List of distances.
+    :rtype: list[tuple(str, str, int)]
+    """
+    distances = []
+
+    data = {x.name: str(x.seq) for x in SeqIO.parse(input_handle, "fasta")}
+    for j in data:
+        print j,
+    print 
+    for i in data:
+        print i,
+        for j in data:
+            print Levenshtein.hamming(data[i], data[j]),
+        print
+
+    return distances
+#maln
 
 def length(input_handle):
     """
@@ -594,6 +619,10 @@ def main():
     parser_aln = subparsers.add_parser("aln", parents=[input2_parser],
         description=doc_split(aln))
     parser_aln.set_defaults(func=aln)
+
+    parser_maln = subparsers.add_parser("maln", parents=[input_parser],
+        description=doc_split(maln))
+    parser_maln.set_defaults(func=maln)
 
     parser_len = subparsers.add_parser("len", parents=[input_parser],
         description=doc_split(length))
