@@ -702,10 +702,9 @@ def main():
         help="Add 'N's between the reads (%(type)s default: %(default)s)")
 
     parser_faMot2Bed = subparsers.add_parser("famotif2bed",
-                                             parents=[file_parser],
-                                             description=docSplit(faMotif2Bed))
+        parents=[file_parser], description=docSplit(faMotif2Bed))
     parser_faMot2Bed.add_argument('--motif', help="The sequence to be found",
-                                  type=str, required=True)
+        type=str, required=True)
 
     args = parser.parse_args()
 
