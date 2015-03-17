@@ -421,10 +421,10 @@ def descr(input_handle):
 
 def length_split(input_handle, output_handles, length):
     """
-    Split a fasta/fastq file on length.
+    Split a FASTA/FASTQ file on length.
 
-    :arg stream input_handle: Open readable handle to a fasta/fastq file.
-    :arg stream output_handles: List of open writable handles to fasta/fastq files.
+    :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
+    :arg stream output_handles: List of open writable handles to FASTA/FASTQ files.
     :arg int length: Length threshold.
     """
     file_format = guess_file_format(input_handle)
@@ -438,10 +438,10 @@ def length_split(input_handle, output_handles, length):
 
 def reverse(input_handle, output_handle):
     """
-    Make the reverse complement a fasta/fastq file.
+    Make the reverse complement a FASTA/FASTQ file.
 
-    :arg stream input_handle: Open readable handle to a fasta/fastq file.
-    :arg stream output_handle: Open writable handle to a fasta/fastq file.
+    :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
+    :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
     """
     file_format = guess_file_format(input_handle)
 
@@ -454,10 +454,10 @@ def reverse(input_handle, output_handle):
 
 def merge(input_handles, output_handle, fill):
     """
-    Merge two fasta files.
+    Merge two FASTA files.
 
-    :arg stream input_handle: List of open readable handle to fasta/fastq files.
-    :arg stream output_handle: Open writable handle to a fasta/fastq file.
+    :arg stream input_handle: List of open readable handle to FASTA/FASTQ files.
+    :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
     :arg int fill: Amount of 'N's to be added between the reads.
     """
     for records in itertools.izip(SeqIO.parse(input_handles[0], 'fasta'),
