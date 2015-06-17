@@ -131,7 +131,7 @@ def main():
         type=argparse.FileType('r'), help='input file')
     parser.add_argument('library_handle', metavar='LIBRARY',
         type=argparse.FileType('r'), help='file containing markers')
-    parser.add_argument('-o', dest='output_handle',
+    parser.add_argument('-o', dest='output_handle', metavar='OUTPUT',
         type=argparse.FileType('w'), default=sys.stdout,
         help='output file (default=stdout)')
     parser.add_argument('-v', action='version', version=version(parser.prog))
