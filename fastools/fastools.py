@@ -18,19 +18,29 @@ def guess_file_format(handle):
     """
     Guess the file type of an NGS data file.
 
-    We assume that the stream is rewinded before use, after use, the input
-    stream will be rewinded.
-
-    :arg stream handle: Open readable handle to an NGS data file.
+    :arg file handle: Open readable handle to an NGS data file.
 
     :return str: Either 'fasta' or 'fastq'.
     """
-    if handle.isatty():
+    try:
+        extension = getattr(handle, 'name').split('.')[-1]
+    except AttributeError:
+        pass
+    else:
+        if extension in ('fastq', 'fq'):
+            return 'fastq'
+        elif extension in ('fasta', 'fa'):
+            return 'fasta'
+
+    try:
+        position = handle.tell()
+        handle.seek(0)
+    except IOError:
         sys.stderr.write('Cannot deterine file type in stream, assuming FASTA')
         return 'fasta'
 
     token = handle.read(1)
-    handle.seek(0)
+    handle.seek(position)
 
     if token == '>':
         return 'fasta'
