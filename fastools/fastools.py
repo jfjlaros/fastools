@@ -429,6 +429,25 @@ def descr(input_handle):
         print record.description
 
 
+def splitseq(input_handle, output_handles, sequence):    
+    """
+    split a FASTA/FASTQ file based on containing part of the sequence 
+ 
+    :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
+    :arg stream output_handles: List of open writable handles to FASTA/FASTQ files.
+    :arg str sequence: filter reads containing this sequence.
+    """
+
+    file_format = guess_file_format(input_handle)
+
+    for record in SeqIO.parse(input_handle, file_format) :
+        if sequence in record.seq:
+            SeqIO.write(record,output_handles[0], file_format)
+        else:
+            SeqIO.write(record,output_handles[1], file_format)
+
+
+
 def length_split(input_handle, output_handles, length):
     """
     Split a FASTA/FASTQ file on length.
@@ -652,6 +671,10 @@ def main():
     parser_descr = subparsers.add_parser('descr', parents=[input_parser],
         description=doc_split(descr))
     parser_descr.set_defaults(func=descr)
+
+    parser_splitseq = subparsers.add_parser('splitseq', parents=[input_parser,
+        output2_parser, seq_parser], description=doc_split(splitseq))
+    parser_splitseq.set_defaults(func=splitseq)
 
     parser_lenfilt = subparsers.add_parser('lenfilt', parents=[input_parser,
         output2_parser], description=doc_split(length_split))
