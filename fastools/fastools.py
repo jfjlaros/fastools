@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import argparse
+import csv
 import itertools
 import re
 import Levenshtein
@@ -12,7 +13,14 @@ from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
 
+from .peeker import Peeker
 from . import doc_split, version, usage
+
+
+def _write_seq(handle, seq, name, file_format='fasta'):
+    record = SeqRecord(Seq.Seq(seq), name, '', '')
+    SeqIO.write(record, handle, file_format)
+
 
 def guess_file_format(handle):
     """
@@ -22,27 +30,7 @@ def guess_file_format(handle):
 
     :return str: Either 'fasta' or 'fastq'.
     """
-    try:
-        extension = getattr(handle, 'name').split('.')[-1]
-    except AttributeError:
-        pass
-    else:
-        if extension in ('fastq', 'fq'):
-            return 'fastq'
-        elif extension in ('fasta', 'fa'):
-            return 'fasta'
-
-    try:
-        position = handle.tell()
-        handle.seek(0)
-    except IOError:
-        sys.stderr.write('Cannot deterine file type in stream, assuming FASTA')
-        return 'fasta'
-
-    token = handle.read(1)
-    handle.seek(position)
-
-    if token == '>':
+    if handle.peek(1) == '>':
         return 'fasta'
     return 'fastq'
 
@@ -166,6 +154,13 @@ def length(input_handle):
     return lengths
 
 
+def list_enzymes():
+    """
+    Return a list of supported restiction enzymes.
+    """
+    return Restriction.Restriction_Dictionary.rest_dict.keys()
+
+
 def restrict(input_handle, enzymes):
     """
     Fragment a genome with restriction enzymes.
@@ -194,9 +189,11 @@ def collapse(word, max_stretch):
     length.
 
     :arg str word: Non empty input string.
-    :arg int max_stretch: Maximum stretch of single letters, must be larger than 1.
+    :arg int max_stretch: Maximum stretch of single letters, must be larger
+        than 1.
 
-    :return tuple(str, int): The collapsed word and the number of collapsed stretches.
+    :return tuple(str, int): The collapsed word and the number of collapsed
+        stretches.
     """
     stretch = 0
     collapsed_word = word[0]
@@ -507,6 +504,26 @@ def fa_motif2bed(input_handle, output_handle, motif):
                 '\n')
 
 
+def csv2fa2(input_handle, output_handles, skip_header=False):
+    """
+    Convert a CSV file to two FASTA files.
+
+    :arg stream input_handle: Open readable handle to a CSV file.
+    :arg list(stream) output_handles: List of open writable handles to FASTA
+        files.
+    :arg bool skip_header: Ignore the first line of the CSV file.
+    """
+    dialect = csv.Sniffer().sniff(input_handle.read(1024))
+    input_handle.seek(0)
+
+    reader = csv.reader(input_handle, dialect)
+    if skip_header:
+        reader.next()
+    for record in reader:
+        _write_seq(output_handles[0], record[1], record[0])
+        _write_seq(output_handles[1], record[2], record[0])
+
+
 def main():
     """
     Main entry point.
@@ -582,10 +599,15 @@ def main():
         description=doc_split(length))
     parser_len.set_defaults(func=length)
 
+    parser_list_enzymes = subparsers.add_parser('list_enzymes',
+        description=doc_split(list_enzymes))
+    parser_list_enzymes.set_defaults(func=list_enzymes)
+
     parser_restrict = subparsers.add_parser('restrict', parents=[input_parser],
         description=doc_split(restrict))
-    parser_restrict.add_argument('-r', dest='enzymes', type=str, nargs='+',
-        default=['EcoRI', 'MseI'], help='restriction enzymes')
+    parser_restrict.add_argument('-r', dest='enzymes', metavar='ENZYME',
+        type=str, action='append', default=[],
+        help='restriction enzyme (use multiple times for more enzymes)')
     parser_restrict.set_defaults(func=restrict)
 
     parser_collapse = subparsers.add_parser('collapse', parents=[file_parser],
@@ -675,6 +697,14 @@ def main():
         help='The sequence to be found')
     parser_fa_mot2bed.set_defaults(func=fa_motif2bed)
 
+    parser_csv2fa2 = subparsers.add_parser('csv2fa2',
+        parents=[input_parser, output2_parser], description=doc_split(csv2fa2))
+    parser_csv2fa2.add_argument('-s', dest='skip_header', action='store_true',
+        help='skip the first line of the CSV file')
+    parser_csv2fa2.set_defaults(func=csv2fa2)
+
+    sys.stdin = Peeker(sys.stdin)
+
     try:
         args = parser.parse_args()
     except IOError, error:
@@ -686,6 +716,9 @@ def main():
 
     elif args.subcommand == 'len':
         print ' '.join(map(lambda x: str(x), length(args.input_handle)))
+
+    elif args.subcommand == 'list_enzymes':
+        print '\n'.join(list_enzymes())
 
     elif args.subcommand == 'restrict':
         print ' '.join(map(lambda x: str(x), restrict(args.input_handle,
