@@ -51,6 +51,11 @@ def guess_file_format(handle):
 
 def bed_read(handle):
     """
+    Parse a four-column BED file (chrom start end replacement).
+
+    :arg file handle: Open readable handle to a BED file.
+
+    :returns dict: A list of edits (ranges and replacements) per chromosome.
     """
     records = defaultdict(list)
 
@@ -209,9 +214,11 @@ def collapse(word, max_stretch):
     length.
 
     :arg str word: Non empty input string.
-    :arg int max_stretch: Maximum stretch of single letters, must be larger than 1.
+    :arg int max_stretch: Maximum stretch of single letters, must be larger
+        than 1.
 
-    :return tuple(str, int): The collapsed word and the number of collapsed stretches.
+    :return tuple(str, int): The collapsed word and the number of collapsed
+        stretches.
     """
     stretch = 0
     collapsed_word = word[0]
@@ -547,7 +554,8 @@ def fa_motif2bed(input_handle, output_handle, motif):
 
 def edit(input_handle, bed_handle, output_handle):
     """
-    Replace regions in a reference sequence.
+    Replace regions in a reference sequence. The BED file is structured as
+    follows: "chrom start end replacement".
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream bed_handle: Open readable_handle to a BED file.
