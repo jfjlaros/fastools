@@ -8,6 +8,8 @@ import urllib2
 import random
 import sys
 
+from collections import defaultdict
+
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
@@ -45,6 +47,19 @@ def guess_file_format(handle):
     if token == '>':
         return 'fasta'
     return 'fastq'
+
+
+def bed_read(handle):
+    """
+    """
+    records = defaultdict(list)
+
+    for line in handle.readlines():
+        record = line.split()
+        records[record[0]].append([int(record[1]), int(record[2]), record[3]])
+    for reference in records:
+        records[reference].sort(reverse=True)
+    return records
 
 
 def sanitise(input_handle, output_handle):
@@ -526,6 +541,23 @@ def fa_motif2bed(input_handle, output_handle, motif):
                 '\n')
 
 
+def edit(input_handle, bed_handle, output_handle):
+    """
+    Replace regions in a reference sequence.
+
+    :arg stream input_handle: Open readable handle to a FASTA file.
+    :arg stream bed_handle: Open readable_handle to a BED file.
+    :arg stream output_handle: Open writable handle to a FASTA file.
+    """
+    bed_records = bed_read(bed_handle)
+
+    for record in SeqIO.parse(input_handle, 'fasta'):
+        for bed_record in bed_records[record.name]:
+            record.seq = (record.seq[:bed_record[0] - 1] + bed_record[2] +
+                record.seq[bed_record[1]:])
+        SeqIO.write([record], output_handle, 'fasta')
+
+
 def main():
     """
     Main entry point.
@@ -697,6 +729,12 @@ def main():
     parser_fa_mot2bed.add_argument('motif', metavar='MOTIF', type=str,
         help='The sequence to be found')
     parser_fa_mot2bed.set_defaults(func=fa_motif2bed)
+
+    parser_edit = subparsers.add_parser('edit',
+        parents=[input_parser, output_parser], description=doc_split(edit))
+    parser_edit.add_argument('bed_handle', metavar='BED',
+        type=argparse.FileType('r'), help='BED file')
+    parser_edit.set_defaults(func=edit)
 
     try:
         args = parser.parse_args()
