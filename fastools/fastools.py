@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import argparse
 import itertools
 import re
@@ -15,6 +14,7 @@ from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
 
 from . import doc_split, version, usage
+
 
 def guess_file_format(handle):
     """
@@ -449,7 +449,8 @@ def splitseq(input_handle, output_handles, sequence):
     split a FASTA/FASTQ file based on containing part of the sequence 
  
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
-    :arg stream output_handles: List of open writable handles to FASTA/FASTQ files.
+    :arg stream output_handles: List of open writable handles to FASTA/FASTQ
+        files.
     :arg str sequence: filter reads containing this sequence.
     """
 
@@ -468,7 +469,8 @@ def length_split(input_handle, output_handles, length):
     Split a FASTA/FASTQ file on length.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
-    :arg stream output_handles: List of open writable handles to FASTA/FASTQ files.
+    :arg stream output_handles: List of open writable handles to FASTA/FASTQ
+        files.
     :arg int length: Length threshold.
     """
     file_format = guess_file_format(input_handle)
@@ -500,7 +502,8 @@ def merge(input_handles, output_handle, fill):
     """
     Merge two FASTA files.
 
-    :arg stream input_handle: List of open readable handle to FASTA/FASTQ files.
+    :arg stream input_handles: List of open readable handle to FASTA/FASTQ
+        files.
     :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
     :arg int fill: Amount of 'N's to be added between the reads.
     """
@@ -514,12 +517,13 @@ def merge(input_handles, output_handle, fill):
 
 def find_motif(record, motif):
     """
-    Find a certain sequence in a FASTA record
+    Find a certain sequence in a FASTA record.
 
-    :arg SeqRecord record: Seq object which will be searched
-    :arg str motif: The sequence to be found
+    :arg SeqRecord record: Seq object which will be searched.
+    :arg str motif: The sequence to be found.
 
-    :returns generator(tuple(int, int)): tuple of start and end of matches in record
+    :returns generator(tuple(int, int)): tuple of start and end of matches in
+        record.
     """
     regex = re.compile(motif.strip(), re.IGNORECASE)
 
@@ -529,11 +533,11 @@ def find_motif(record, motif):
 
 def fa_motif2bed(input_handle, output_handle, motif):
     """
-    Find a given sequence in a FASTA file and write the results to a Bed file
+    Find a given sequence in a FASTA file and write the results to a Bed file.
 
-    :arg stream input_handle: Open readable handle to a FASTA file
-    :arg stream output_handle: Open writable handle to a BED file
-    :arg str motif: The sequence to be found
+    :arg stream input_handle: Open readable handle to a FASTA file.
+    :arg stream output_handle: Open writable handle to a BED file.
+    :arg str motif: The sequence to be found.
     """
     for record in SeqIO.parse(input_handle, 'fasta'):
         for m in find_motif(record, motif):
