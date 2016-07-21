@@ -2,12 +2,14 @@
 import argparse
 import itertools
 import re
-import Levenshtein
 import urllib2
 import random
 import sys
 
 from collections import defaultdict
+
+import Levenshtein
+import track
 
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
@@ -59,9 +61,9 @@ def bed_read(handle):
     """
     records = defaultdict(list)
 
-    for line in handle.readlines():
-        record = line.split()
-        records[record[0]].append([int(record[1]), int(record[2]), record[3]])
+    reader = track.load(handle.name)
+    for record in reader.read():
+        records[record[0]].append([record[1], record[2], record[3]])
     for reference in records:
         records[reference].sort(reverse=True)
     return records
