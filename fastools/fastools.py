@@ -443,6 +443,20 @@ def cat(input_handle):
         print record.seq
 
 
+def raw2fa(input_handle, output_handle, name, description):
+    """
+    Make a FASTA file from a raw sequence.
+
+    :arg stream input_handle: Open readable handle to a raw sequence file.
+    :arg stream output_handle: Open writeable handle to a FASTA file.
+    :arg str name: Name of the DNA sequence.
+    :arg str description: Description of the DNA sequence.
+    """
+    record = SeqRecord(
+        Seq.Seq(input_handle.read().strip('\n')), name, '', description)
+    SeqIO.write(record, output_handle, 'fasta')
+
+
 def descr(input_handle):
     """
     Return the description of all records in a FASTA file.
@@ -613,6 +627,10 @@ def main():
     name_parser.add_argument('name', metavar='ACCNO', type=str,
         help='accession number')
 
+    description_parser = argparse.ArgumentParser(add_help=False)
+    description_parser.add_argument('description', metavar='DESCR', type=str,
+        help='descriptino of the DNA sequence')
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=usage[0], epilog=usage[1])
@@ -691,11 +709,9 @@ def main():
     parser_mangle.set_defaults(func=mangle)
 
     parser_gen = subparsers.add_parser('gen', parents=[output_parser,
-        name_parser], description=doc_split(generate_dna))
+        name_parser, description_parser], description=doc_split(generate_dna))
     parser_gen.add_argument('length', metavar='LENGTH', type=int,
         help='length of the DNA sequence')
-    parser_gen.add_argument('description', metavar='DESCR', type=str,
-        help='descriptino of the DNA sequence')
     parser_gen.set_defaults(func=generate_dna)
 
     parser_get = subparsers.add_parser('get', parents=[output_parser,
@@ -749,6 +765,11 @@ def main():
     parser_edit.add_argument('bed_handle', metavar='BED',
         type=argparse.FileType('r'), help='BED file')
     parser_edit.set_defaults(func=edit)
+
+    parser_raw2fa = subparsers.add_parser('raw2fa',
+        parents=[input_parser, output_parser, name_parser, description_parser],
+        description=doc_split(raw2fa))
+    parser_raw2fa.set_defaults(func=raw2fa)
 
     try:
         args = parser.parse_args()
