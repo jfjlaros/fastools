@@ -9,7 +9,6 @@ import sys
 from collections import defaultdict
 
 import Levenshtein
-import track
 
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
@@ -51,19 +50,19 @@ def guess_file_format(handle):
     return 'fastq'
 
 
-def bed_read(handle):
+def edits_read(handle):
     """
-    Parse a four-column BED file (chrom start end replacement).
+    Parse a FASTA file that contains edits.
 
-    :arg file handle: Open readable handle to a BED file.
+    :arg stream input_handle: Open readable handle to a FASTA file.
 
     :returns dict: A list of edits (ranges and replacements) per chromosome.
     """
     records = defaultdict(list)
 
-    reader = track.load(handle.name)
-    for record in reader.read():
-        records[record[0]].append([record[1], record[2], record[3]])
+    for record in SeqIO.parse(handle, 'fasta'):
+         chrom, start, end = re.split(':|_', record.description.split()[-1])
+         records[chrom].append([int(start), int(end), record.seq])
     for reference in records:
         records[reference].sort(reverse=True)
     return records
@@ -453,7 +452,7 @@ def raw2fa(input_handle, output_handle, name, description):
     :arg str description: Description of the DNA sequence.
     """
     record = SeqRecord(
-        Seq.Seq(input_handle.read().strip('\n')), name, '', description)
+        Seq.Seq(input_handle.readline().strip('\n')), name, '', description)
     SeqIO.write(record, output_handle, 'fasta')
 
 
@@ -568,19 +567,20 @@ def fa_motif2bed(input_handle, output_handle, motif):
                 '\n')
 
 
-def edit(input_handle, bed_handle, output_handle):
+def edit(input_handle, edits_handle, output_handle):
     """
-    Replace regions in a reference sequence. The BED file is structured as
-    follows: "chrom start end replacement".
+    Replace regions in a reference sequence. The header of the edits file must
+    have the following strucure:
+    >name chrom:start_end
 
     :arg stream input_handle: Open readable handle to a FASTA file.
-    :arg stream bed_handle: Open readable_handle to a BED file.
+    :arg stream edits_handle: Open readable_handle to a FASTA file.
     :arg stream output_handle: Open writable handle to a FASTA file.
     """
-    bed_records = bed_read(bed_handle)
+    edits_records = edits_read(edits_handle)
 
     for record in SeqIO.parse(input_handle, 'fasta'):
-        for bed_record in bed_records[record.name]:
+        for bed_record in edits_records[record.name]:
             record.seq = (record.seq[:bed_record[0] - 1] + bed_record[2] +
                 record.seq[bed_record[1]:])
         SeqIO.write([record], output_handle, 'fasta')
@@ -762,8 +762,8 @@ def main():
 
     parser_edit = subparsers.add_parser('edit',
         parents=[input_parser, output_parser], description=doc_split(edit))
-    parser_edit.add_argument('bed_handle', metavar='BED',
-        type=argparse.FileType('r'), help='BED file')
+    parser_edit.add_argument('edits_handle', metavar='EDITS',
+        type=argparse.FileType('r'), help='FASTA file containing edits')
     parser_edit.set_defaults(func=edit)
 
     parser_raw2fa = subparsers.add_parser('raw2fa',
