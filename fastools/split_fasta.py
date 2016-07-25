@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Split a FASTA file based on the occurrence of markers.
 
@@ -90,7 +88,8 @@ def split_fasta(input_handle, library_handle, output_handle):
         for entry in library:
             if entry[1] in record.seq:
                 flanks = str(record.seq).split(entry[1])
-                write_output(entry, record.description,
+                write_output(
+                    entry, record.description,
                     flanks[0] + entry[2] + flanks[1])
                 recognised += 1
                 hit = True
@@ -105,8 +104,8 @@ def split_fasta(input_handle, library_handle, output_handle):
         unique = 0
         maximum = 0
         for i in sorted(entry[6], key = lambda item: -entry[6][item][1]):
-            entry[4].write('>COUNT {:04d} {}\n'.format(entry[6][i][1],
-                entry[6][i][0]))
+            entry[4].write(
+                '>COUNT {:04d} {}\n'.format(entry[6][i][1], entry[6][i][0]))
             entry[4].write('{}\n'.format(i))
             if entry[6][i][1] > maximum:
                 maximum = entry[6][i][1]
@@ -127,11 +126,14 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=usage[0], epilog=usage[1])
 
-    parser.add_argument('input_handle', metavar='INPUT',
-        type=argparse.FileType('r'), help='input file')
-    parser.add_argument('library_handle', metavar='LIBRARY',
-        type=argparse.FileType('r'), help='file containing markers')
-    parser.add_argument('-o', dest='output_handle', metavar='OUTPUT',
+    parser.add_argument(
+        'input_handle', metavar='INPUT', type=argparse.FileType('r'),
+        help='input file')
+    parser.add_argument(
+        'library_handle', metavar='LIBRARY', type=argparse.FileType('r'),
+        help='file containing markers')
+    parser.add_argument(
+        '-o', dest='output_handle', metavar='OUTPUT',
         type=argparse.FileType('w'), default=sys.stdout,
         help='output file (default=stdout)')
     parser.add_argument('-v', action='version', version=version(parser.prog))

@@ -50,7 +50,6 @@ def guess_file_format(handle):
     return 'fastq'
 
 
-def edits_read(handle):
     """
     Parse a FASTA file that contains edits.
 
@@ -66,6 +65,22 @@ def edits_read(handle):
     for reference in records:
         records[reference].sort(reverse=True)
     return records
+
+
+def _find_motif(record, motif):
+    """
+    Find a certain sequence in a FASTA record.
+
+    :arg SeqRecord record: Seq object which will be searched.
+    :arg str motif: The sequence to be found.
+
+    :returns generator(tuple(int, int)): tuple of start and end of matches in
+        record.
+    """
+    regex = re.compile(motif.strip(), re.IGNORECASE)
+
+    for match in regex.finditer(str(record.seq)):
+        yield (int(match.start()), int(match.end()))
 
 
 def sanitise(input_handle, output_handle):
@@ -200,7 +215,7 @@ def restrict(input_handle, enzymes):
     lengths = []
 
     for record in SeqIO.parse(input_handle, 'fasta'):
-        positions = sorted(set([0, len(record.seq)] + 
+        positions = sorted(set([0, len(record.seq)] +
             sum(restriction_batch.search(record.seq).values(), [])))
 
         for i in range(len(positions) - 1):
@@ -441,7 +456,7 @@ def cat(input_handle):
     :arg stream input_handle: Open readable handle to a FASTA file.
     """
     for record in SeqIO.parse(input_handle, 'fasta'):
-        print record.seq
+        yield str(record.seq)
 
 
 def raw2fa(input_handle, output_handle, name, description):
@@ -465,13 +480,13 @@ def descr(input_handle):
     :arg stream input_handle: Open readable handle to a FASTA file.
     """
     for record in SeqIO.parse(input_handle, 'fasta'):
-        print record.description
+        yield record.description
 
 
-def splitseq(input_handle, output_handles, sequence):    
+def seq_split(input_handle, output_handles, sequence):
     """
-    split a FASTA/FASTQ file based on containing part of the sequence 
- 
+    split a FASTA/FASTQ file based on containing part of the sequence
+
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handles: List of open writable handles to FASTA/FASTQ
         files.
@@ -485,7 +500,6 @@ def splitseq(input_handle, output_handles, sequence):
             SeqIO.write(record,output_handles[0], file_format)
         else:
             SeqIO.write(record,output_handles[1], file_format)
-
 
 
 def length_split(input_handle, output_handles, length):
@@ -540,22 +554,6 @@ def merge(input_handles, output_handle, fill):
         SeqIO.write([record], output_handle, 'fasta')
 
 
-def find_motif(record, motif):
-    """
-    Find a certain sequence in a FASTA record.
-
-    :arg SeqRecord record: Seq object which will be searched.
-    :arg str motif: The sequence to be found.
-
-    :returns generator(tuple(int, int)): tuple of start and end of matches in
-        record.
-    """
-    regex = re.compile(motif.strip(), re.IGNORECASE)
-
-    for match in regex.finditer(str(record.seq)):
-        yield (int(match.start()), int(match.end()))
-
-
 def fa_motif2bed(input_handle, output_handle, motif):
     """
     Find a given sequence in a FASTA file and write the results to a Bed file.
@@ -565,7 +563,7 @@ def fa_motif2bed(input_handle, output_handle, motif):
     :arg str motif: The sequence to be found.
     """
     for record in SeqIO.parse(input_handle, 'fasta'):
-        for m in find_motif(record, motif):
+        for m in _find_motif(record, motif):
             output_handle.write(
                 '\t'.join(map(str, [record.id, m[0], m[1]])) + '\n')
 
@@ -580,7 +578,7 @@ def edit(input_handle, edits_handle, output_handle):
     :arg stream edits_handle: Open readable_handle to a FASTA file.
     :arg stream output_handle: Open writable handle to a FASTA file.
     """
-    edits_records = edits_read(edits_handle)
+    edits_records = _edits_read(edits_handle)
 
     for record in SeqIO.parse(input_handle, 'fasta'):
         for bed_record in edits_records[record.name]:
@@ -682,8 +680,9 @@ def main():
     parser_restrict = subparsers.add_parser(
         'restrict', parents=[input_parser], description=doc_split(restrict))
     parser_restrict.add_argument(
-        '-r', dest='enzymes', type=str, nargs='+', default=['EcoRI', 'MseI'],
-        help='restriction enzymes')
+        '-r', dest='enzymes', metavar='ENZYME', type=str, action='append',
+        default=[],
+        help='restriction enzyme (use multiple times for more enzymes)')
     parser_restrict.set_defaults(func=restrict)
 
     parser_collapse = subparsers.add_parser(
@@ -759,16 +758,16 @@ def main():
         'descr', parents=[input_parser], description=doc_split(descr))
     parser_descr.set_defaults(func=descr)
 
-    parser_splitseq = subparsers.add_parser(
+    parser_seq_split = subparsers.add_parser(
         'splitseq', parents=[input_parser, output2_parser, seq_parser],
-        description=doc_split(splitseq))
-    parser_splitseq.set_defaults(func=splitseq)
+        description=doc_split(seq_split))
+    parser_seq_split.set_defaults(func=seq_split)
 
     parser_lenfilt = subparsers.add_parser(
         'lenfilt', parents=[input_parser, output2_parser],
         description=doc_split(length_split))
     parser_lenfilt.add_argument(
-        '-l', dest='length', type=int, default=25, 
+        '-l', dest='length', type=int, default=25,
         help='length threshold (%(type)s default: %(default)s)')
     parser_lenfilt.set_defaults(func=length_split)
 
@@ -833,6 +832,12 @@ def main():
 
     elif args.subcommand == 'tagcount':
         print count_tags(args.input_handle, args.sequence, args.mismatches)
+
+    elif args.subcommand == 'cat':
+        print '\n'.join(cat(args.input_handle))
+
+    elif args.subcommand == 'descr':
+        print '\n'.join(descr(args.input_handle))
 
     else:
         try:
