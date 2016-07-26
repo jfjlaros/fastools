@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import argparse
+import csv
 import itertools
 import re
 import urllib2
@@ -50,6 +51,12 @@ def guess_file_format(handle):
     return 'fastq'
 
 
+def _write_seq(handle, seq, name, file_format='fasta'):
+    record = SeqRecord(Seq.Seq(seq), name, '', '')
+    SeqIO.write(record, handle, file_format)
+
+
+def _edits_read(handle):
     """
     Parse a FASTA file that contains edits.
 
@@ -200,6 +207,13 @@ def length(input_handle):
         lengths.append(len(record.seq))
 
     return lengths
+
+
+def list_enzymes():
+    """
+    Return a list of supported restiction enzymes.
+    """
+    return Restriction.Restriction_Dictionary.rest_dict.keys()
 
 
 def restrict(input_handle, enzymes):
@@ -568,6 +582,26 @@ def fa_motif2bed(input_handle, output_handle, motif):
                 '\t'.join(map(str, [record.id, m[0], m[1]])) + '\n')
 
 
+def csv2fa2(input_handle, output_handles, skip_header=False):
+    """
+    Convert a CSV file to two FASTA files.
+
+    :arg stream input_handle: Open readable handle to a CSV file.
+    :arg list(stream) output_handles: List of open writable handles to FASTA
+        files.
+    :arg bool skip_header: Ignore the first line of the CSV file.
+    """
+    dialect = csv.Sniffer().sniff(input_handle.read(1024))
+    input_handle.seek(0)
+
+    reader = csv.reader(input_handle, dialect)
+    if skip_header:
+        reader.next()
+    for record in reader:
+        _write_seq(output_handles[0], record[1], record[0])
+        _write_seq(output_handles[1], record[2], record[0])
+
+
 def edit(input_handle, edits_handle, output_handle):
     """
     Replace regions in a reference sequence. The header of the edits file must
@@ -676,6 +710,10 @@ def main():
     parser_len = subparsers.add_parser(
         'len', parents=[input_parser], description=doc_split(length))
     parser_len.set_defaults(func=length)
+
+    parser_list_enzymes = subparsers.add_parser(
+        'list_enzymes', description=doc_split(list_enzymes))
+    parser_list_enzymes.set_defaults(func=list_enzymes)
 
     parser_restrict = subparsers.add_parser(
         'restrict', parents=[input_parser], description=doc_split(restrict))
@@ -790,6 +828,12 @@ def main():
         'motif', metavar='MOTIF', type=str, help='The sequence to be found')
     parser_fa_mot2bed.set_defaults(func=fa_motif2bed)
 
+    parser_csv2fa2 = subparsers.add_parser('csv2fa2',
+        parents=[input_parser, output2_parser], description=doc_split(csv2fa2))
+    parser_csv2fa2.add_argument('-s', dest='skip_header', action='store_true',
+        help='skip the first line of the CSV file')
+    parser_csv2fa2.set_defaults(func=csv2fa2)
+
     parser_edit = subparsers.add_parser(
         'edit', parents=[input_parser, output_parser],
         description=doc_split(edit))
@@ -815,6 +859,9 @@ def main():
 
     elif args.subcommand == 'len':
         print ' '.join(map(lambda x: str(x), length(args.input_handle)))
+
+    elif args.subcommand == 'list_enzymes':
+        print '\n'.join(list_enzymes())
 
     elif args.subcommand == 'restrict':
         print ' '.join(
