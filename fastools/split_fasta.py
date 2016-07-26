@@ -12,7 +12,6 @@ Per marker, two files are created:
 Format of the library file:
 name marker replacement
 """
-
 import argparse
 import sys
 
