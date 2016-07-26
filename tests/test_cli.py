@@ -1,17 +1,15 @@
 """
 Tests for the fastools CLI.
 """
-import md5
 import StringIO
 
 from Bio import SeqIO
 
 from fastools import fastools
 
+from shared import md5_check
 
 class TestCLI(object):
-    """
-    """
     def setup(self):
         self._sanitised_fa = open('data/sanitised.fa')
         self._sanitised_fq = open('data/sanitised.fq')
@@ -20,7 +18,7 @@ class TestCLI(object):
         self._null = open('/dev/null', 'w')
 
     def _md5_check(self, md5sum):
-        return md5.md5(self._output.getvalue()).hexdigest() == md5sum
+        return md5_check(self._output.getvalue(), md5sum)
 
     def test_sanitise(self):
         fastools.sanitise(open('data/unsanitised.fa'), self._output)
