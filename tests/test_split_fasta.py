@@ -12,5 +12,5 @@ class TestSplitFasta(object):
         self._handles = fake_open.handles
         split_fasta.open = self._fake_open.open
 
-    def _md5_check(self, fileno, md5sum):
-        return md5check(self._handles[fileno].getvalue(), md5sum)
+    def _md5_check(self, name, md5sum):
+        return md5check(self._handles[name].getvalue(), md5sum)
