@@ -14,6 +14,7 @@ from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
 
+from .peeker import Peeker
 from . import doc_split, version, usage
 
 
@@ -25,26 +26,12 @@ def guess_file_format(handle):
 
     :return str: Either 'fasta' or 'fastq'.
     """
-    try:
-        extension = getattr(handle, 'name').split('.')[-1]
-    except AttributeError:
-        pass
-    else:
-        if extension in ('fastq', 'fq'):
-            return 'fastq'
-        elif extension in ('fasta', 'fa'):
-            return 'fasta'
-
-    try:
-        position = handle.tell()
+    if handle.name != '<stdin>':
+        token = handle.read(1)
         handle.seek(0)
-    except IOError:
-        sys.stderr.write('Cannot deterine file type in stream, assuming FASTA')
-        return 'fasta'
-
-    token = handle.read(1)
-    handle.seek(position)
-
+    else:
+        token = handle.peek(1)
+    
     if token == '>':
         return 'fasta'
     return 'fastq'
@@ -621,6 +608,26 @@ def edit(input_handle, edits_handle, output_handle):
         SeqIO.write([record], output_handle, 'fasta')
 
 
+def csv2fa2(input_handle, output_handles, skip_header=False):
+    """
+    Convert a CSV file to two FASTA files.
+
+    :arg stream input_handle: Open readable handle to a CSV file.
+    :arg list(stream) output_handles: List of open writable handles to FASTA
+        files.
+    :arg bool skip_header: Ignore the first line of the CSV file.
+    """
+    dialect = csv.Sniffer().sniff(input_handle.read(1024))
+    input_handle.seek(0)
+
+    reader = csv.reader(input_handle, dialect)
+    if skip_header:
+        reader.next()
+    for record in reader:
+        _write_seq(output_handles[0], record[1], record[0])
+        _write_seq(output_handles[1], record[2], record[0])
+
+
 def main():
     """
     Main entry point.
@@ -846,6 +853,8 @@ def main():
         parents=[input_parser, output_parser, name_parser, description_parser],
         description=doc_split(raw2fa))
     parser_raw2fa.set_defaults(func=raw2fa)
+
+    sys.stdin = Peeker(sys.stdin)
 
     try:
         args = parser.parse_args()
