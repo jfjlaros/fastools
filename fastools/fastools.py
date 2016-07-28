@@ -568,26 +568,6 @@ def fa_motif2bed(input_handle, output_handle, motif):
                 '\t'.join(map(str, [record.id, m[0], m[1]])) + '\n')
 
 
-def csv2fa2(input_handle, output_handles, skip_header=False):
-    """
-    Convert a CSV file to two FASTA files.
-
-    :arg stream input_handle: Open readable handle to a CSV file.
-    :arg list(stream) output_handles: List of open writable handles to FASTA
-        files.
-    :arg bool skip_header: Ignore the first line of the CSV file.
-    """
-    dialect = csv.Sniffer().sniff(input_handle.read(1024))
-    input_handle.seek(0)
-
-    reader = csv.reader(input_handle, dialect)
-    if skip_header:
-        reader.next()
-    for record in reader:
-        _write_seq(output_handles[0], record[1], record[0])
-        _write_seq(output_handles[1], record[2], record[0])
-
-
 def edit(input_handle, edits_handle, output_handle):
     """
     Replace regions in a reference sequence. The header of the edits file must
