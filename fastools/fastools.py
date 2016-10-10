@@ -299,7 +299,7 @@ def count_tags(input_handle, sequence, mismatches):
 
     for record in SeqIO.parse(input_handle, 'fasta'):
         alignment = pairwise2.align.localms(
-            str(record.seq), sequence, 1, -1, 0, -1)
+            str(record.seq), sequence, 1, -1, -1, -1)
 
         if alignment and len(sequence) - alignment[0][2] <= mismatches:
             count += 1
