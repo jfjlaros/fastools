@@ -151,3 +151,11 @@ class TestCLI(object):
     def test_edit(self):
         fastools.edit(self._sanitised_fa, open('data/edits.fa'), self._output)
         assert self._md5_check('b865c2069b8900df35d7733abd8c39e0')
+
+    def test_dna2rna(self):
+        fastools.dna2rna(self._sanitised_fa, self._output)
+        assert self._md5_check('df76f76e77d5d5f785837c91a73f1a72')
+
+    def test_rna2dna(self):
+        fastools.rna2dna(open('data/sanitised_rna.fa'), self._output)
+        assert self._md5_check('33d5334b5e210f681f5a23b9c03806be')

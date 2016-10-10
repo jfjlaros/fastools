@@ -608,6 +608,34 @@ def csv2fa2(input_handle, output_handles, skip_header=False):
         _write_seq(output_handles[1], record[2], record[0])
 
 
+def dna2rna(input_handle, output_handle):
+    """
+    Convert the FASTA/FASTQ content from DNA to RNA.
+
+    :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
+    :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
+    """
+    file_format = guess_file_format(input_handle)
+
+    for record in SeqIO.parse(input_handle, file_format):
+        record.seq = record.seq.transcribe()
+        SeqIO.write(record, output_handle, file_format)
+
+
+def rna2dna(input_handle, output_handle):
+    """
+    Convert the FASTA/FASTQ content from RNA to DNA.
+
+    :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
+    :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
+    """
+    file_format = guess_file_format(input_handle)
+
+    for record in SeqIO.parse(input_handle, file_format):
+        record.seq = record.seq.back_transcribe()
+        SeqIO.write(record, output_handle, file_format)
+
+
 def main():
     """
     Main entry point.
@@ -833,6 +861,14 @@ def main():
         parents=[input_parser, output_parser, name_parser, description_parser],
         description=doc_split(raw2fa))
     parser_raw2fa.set_defaults(func=raw2fa)
+
+    parser_dna2rna = subparsers.add_parser(
+        'dna2rna', parents=[file_parser], description=doc_split(dna2rna))
+    parser_dna2rna.set_defaults(func=dna2rna)
+
+    parser_rna2dna = subparsers.add_parser(
+        'rna2dna', parents=[file_parser], description=doc_split(rna2dna))
+    parser_rna2dna.set_defaults(func=rna2dna)
 
     sys.stdin = Peeker(sys.stdin)
 
