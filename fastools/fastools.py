@@ -442,7 +442,7 @@ def get_reference(name, email, output_handle, start=0, stop=0, orientation=0):
                 seq_stop=stop, strand=orientation)
         else:
             handle = Entrez.efetch(db='nuccore', rettype='fasta', id=name)
-    except urllib2.HTTPError:
+    except urllib2.HTTPError: # URLError if NCBI is down.
         sys.stderr.write('Error: could not retrieve {}\n'.format(name))
         return
 
