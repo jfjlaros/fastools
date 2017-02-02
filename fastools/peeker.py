@@ -6,31 +6,33 @@ import os
 
 
 class Peeker(object):
-    def __init__(self, fileobj):
-        self.fileobj = fileobj
-        self.buf = cStringIO.StringIO()
+    def __init__(self, handle):
+        self._buf = cStringIO.StringIO()
+        self._handle = handle
 
-    def _append_to_buf(self, contents):
-        oldpos = self.buf.tell()
-        self.buf.seek(0, os.SEEK_END)
-        self.buf.write(contents)
-        self.buf.seek(oldpos)
+        self.name = handle.name
+
+    def _append_to_buf(self, data):
+        position = self._buf.tell()
+        self._buf.seek(0, os.SEEK_END)
+        self._buf.write(data)
+        self._buf.seek(position)
 
     def peek(self, size):
-        contents = self.fileobj.read(size)
-        self._append_to_buf(contents)
-        return contents
+        data = self._handle.read(size)
+        self._append_to_buf(data)
+        return data
 
     def read(self, size=None):
         if size is None:
-            return self.buf.read() + self.fileobj.read()
-        contents = self.buf.read(size)
-        if len(contents) < size:
-            contents += self.fileobj.read(size - len(contents))
-        return contents
+            return self._buf.read() + self._handle.read()
+        data = self._buf.read(size)
+        if len(data) < size:
+            data += self._handle.read(size - len(data))
+        return data
 
     def readline(self):
-        line = self.buf.readline()
+        line = self._buf.readline()
         if not line.endswith('\n'):
-            line += self.fileobj.readline()
+            line += self.handle.readline()
         return line
