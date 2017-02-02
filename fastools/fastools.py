@@ -31,7 +31,7 @@ def guess_file_format(handle):
         handle.seek(0)
     else:
         token = handle.peek(1)
-    
+
     if token == '>':
         return 'fasta'
     return 'fastq'
