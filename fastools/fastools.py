@@ -37,6 +37,27 @@ def guess_file_format(handle):
     return 'fastq'
 
 
+def guess_header_format(handle):
+    """
+    Guess the header format.
+
+    :arg stream handle: Open readable handle to an NGS data file.
+
+    :return str: Either 'normal', 'x' or 'unknown'.
+    """
+    if handle.name != '<stdin>':
+        line = handle.readline().strip('\n')
+        handle.seek(0)
+    else:
+        line = handle.peek(1024).split('\n')[0]
+
+    if line.count('#') == 1 and line.split('#')[1].count('/') == 1:
+        return 'normal'
+    if line.count(' ') == 1 and line.split(' ')[1].count(':') == 3:
+        return 'x'
+    return 'unknown'
+
+
 def _write_seq(handle, seq, name, file_format='fasta'):
     record = SeqRecord(Seq.Seq(seq), name, '', '')
     SeqIO.write(record, handle, file_format)
