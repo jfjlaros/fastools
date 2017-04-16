@@ -74,7 +74,7 @@ class TestCLI(object):
 
     def test_fa2gb(self):
         fastools.fa2gb(self._sanitised_fa, self._output, 'NM_000000.0')
-        assert self._md5_check('c168e168b5d61c43d383a37c743983e9')
+        assert self._md5_check('a58ca021a538f76737fe641209451f09')
 
     def test_gb2fa(self):
         fastools.gb2fa(open('data/sanitised.gb'), self._output)
