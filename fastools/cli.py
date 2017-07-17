@@ -6,12 +6,16 @@ import random
 import sys
 import Levenshtein
 
-from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
+from Bio import Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
-from Bio.SeqRecord import SeqRecord
 from .peeker import Peeker
 from . import doc_split, version, usage
 from . import fastools
+
+
+from Bio import Seq, SeqIO
+from Bio.SeqRecord import SeqRecord
+
 
 def sanitise(input_handle, output_handle):
     """
@@ -566,6 +570,17 @@ def rna2dna(input_handle, output_handle):
         record.seq = record.seq.back_transcribe()
         SeqIO.write(record, output_handle, file_format)
 
+def extract(input_handle, output_handle, location, number_bp_start, number_bp_end):
+    """
+
+    :param input_handle:  Open readable handle to a FASTA/FASTQ file.
+    :param output_handle: Open writable handle to a FASTA/FASTQ file
+    :param location:      Location to extract the read sequence
+    :param number_bp_start: number of base pairs in the start
+    :param number_bp_end:   number of base pairs in the end
+    :return:
+    """
+    extractor = fastools.SeqExtractor(input_handle,output_handle,location,number_bp_start,number_bp_end)
 
 def main():
     """
@@ -598,6 +613,17 @@ def main():
     qual_parser.add_argument(
         '-q', dest='quality', type=int, default=40,
         help='quality score (%(type)s default=%(default)s)')
+
+    number_bp_start_parser = argparse.ArgumentParser(add_help=False)
+    number_bp_start_parser.add_argument(
+        '-nbs', dest='number_bp_start', type=int, default=None,
+        help='number of base pairs from the start (%(type)s default=%(default)s)')
+
+    number_bp_end_parser = argparse.ArgumentParser(add_help=False)
+    number_bp_end_parser.add_argument(
+        '-nbe', dest='number_bp_end', type=int, default=None,
+        help='number of base pairs from the end (%(type)s default=%(default)s)')
+
 
     seq_parser = argparse.ArgumentParser(add_help=False)
     seq_parser.add_argument(
@@ -801,6 +827,12 @@ def main():
         'rna2dna', parents=[file_parser], description=doc_split(rna2dna))
     parser_rna2dna.set_defaults(func=rna2dna)
 
+    parser_extract = subparsers.add_parser(
+        'extract', parents=[file_parser,number_bp_start_parser,number_bp_end_parser],
+        description= doc_split(extract))
+    parser_extract.add_argument( 'location', metavar='LOCATION', type=str, choices=['index2','start','end','both_ends'], help='Location from where to extract the read')
+    parser_extract.set_defaults(func = extract)
+
     sys.stdin = Peeker(sys.stdin)
 
     try:
@@ -843,7 +875,7 @@ def main():
 
     else:
         try:
-            args.func(maln**{k: v for k, v in vars(args).items()
+            args.func(**{k: v for k, v in vars(args).items()
                 if k not in ('func', 'subcommand')})
         except ValueError, error:
             parser.error(error)

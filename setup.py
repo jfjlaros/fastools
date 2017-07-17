@@ -29,7 +29,7 @@ setup(
     install_requires=requires,
     entry_points = {
         'console_scripts': [
-            'fastools = fastools.fastools:main',
+            'fastools = fastools.cli:main',
             'demultiplex = fastools.demultiplex:main',
             'split_fasta = fastools.split_fasta:main'
         ]

@@ -1,21 +1,36 @@
-import argparse
-import csv
-import itertools
 import re
-import urllib2
-import random
-import sys
-
 from collections import defaultdict
-
-import Levenshtein
-
-from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
-from Bio.Alphabet import IUPAC
+from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
+from . import exceptions
 
-from .peeker import Peeker
-from . import doc_split, version, usage
+class SeqExtractor(object):
+
+    def __init__(self, input_handle, output_handle, location, bases_start, bases_end ):
+
+        self.input_handle = input_handle
+        self.output_handle = output_handle
+        self.location = location
+        self.bases_start = bases_start
+        self.bases_end  = bases_end
+
+        self._value_pair_checker()
+
+    def _value_pair_checker(self):
+
+        if self.location == 'start':
+
+            if self.bases_start is None:
+                raise exceptions.InvalidPairValueError("Ivalid Value-Pair:"+self.location+"-"+str(self.bases_start))
+
+        if self.location == 'end':
+
+            if self.bases_end is None:
+                raise exceptions.InvalidPairValueError("Ivalid Value-Pair:"+self.location+"-"+ str(self.bases_end))
+
+        if self.location == 'both_ends':
+            if self.bases_start is None or self.bases_end is None:
+                raise exceptions.InvalidPairValueError("Ivalid Value-Pair:"+self.location+"-"+ str(self.bases_start) +":" + str(self.bases_end))
 
 
 def guess_file_format(handle):
@@ -97,6 +112,39 @@ def _find_motif(record, motif):
         yield (int(match.start()), int(match.end()))
 
 
+def batch_iterator(self,iterator, batch_size):
+    """
+    Returns lists of length batch_size.
+
+    This can be used on any iterator, for example to batch up
+    SeqRecord objects from Bio.SeqIO.parse(...), or to batch
+    Alignment objects from Bio.AlignIO.parse(...), or simply
+    lines from a file handle.
+
+    This is a generator function, and it returns lists of the
+    entries from the supplied iterator.  Each list will have
+    batch_size entries, although the final list may be shorter.
+
+    :param self:
+    :param iterator:
+    :param batch_size:
+    :return:
+    """
+    entry = True
+    while entry:
+        batch = []
+        while len(batch) < batch_size:
+            try:
+                entry = iterator.__next__()
+            except StopIteration:
+                entry = None
+            if entry is None:
+                # End of file
+                break
+            batch.append(entry)
+
+        if batch:
+            yield batch
 
 
 
