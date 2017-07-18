@@ -2,35 +2,79 @@ import re
 from collections import defaultdict
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
-from . import exceptions
+
 
 class SeqExtractor(object):
 
-    def __init__(self, input_handle, output_handle, location, bases_start, bases_end ):
+    def __init__(self, input_handle, output_handle, location, bases_start, bases_end, file_format ):
 
         self.input_handle = input_handle
         self.output_handle = output_handle
         self.location = location
         self.bases_start = bases_start
-        self.bases_end  = bases_end
+        self.bases_end = bases_end
+        self.file_format = file_format
 
         self._value_pair_checker()
+
+    def extractor(self):
+
+        record_iter = SeqIO.parse(open(self.input_handle.name), self.file_format)
+
+        # batching makes it faster
+        for i, batch in enumerate(batch_iterator(record_iter, 10000)):
+            for record in batch:
+
+                if self.location == 'start':
+                    seq_identifier, fixed_seq, fixed_qual = self.extract_from_start(record)
+                elif self.location == 'end':
+                    seq_identifier, fixed_seq, fixed_qual = self.extract_from_end(record)
+                elif self.location == 'both_ends':
+                    seq_identifier, fixed_seq, fixed_qual = self.extract_from_both_ends(record)
+                else:
+                    self.extract_from_index(record)
+                    fixed_seq = record.seq
+                    fixed_qual =  record.letter_annotations["phred_quality"]
+
+                record.letter_annotations = {}
+                record.seq = fixed_seq
+                record.letter_annotations["phred_quality"] = fixed_qual
+
+    # in that case it should be index2
+    def extract_from_index(self,record):
+        header_format = guess_header_format(self.input_handle)
+        if header_format == "x":
+           try:
+               record.description.split("+")[1]
+           except:
+               raise RuntimeError("No second index found in fasta header: "+record.description)
+
+
+    def extract_from_start(self, record):
+        return record.seq[0:self.bases_start], record.seq[self.bases_start:len(record.seq)], record.letter_annotations["phred_quality"][self.bases_start:len(record.seq)]
+
+    def extract_from_end(self, record):
+        return record.seq[len(record.seq) - self.bases_end:len(record.seq)], record.seq[0:len(record.seq) - self.bases_end], record.letter_annotations["phred_quality"][0:len(record.seq) - self.bases_end]
+
+    def extract_from_both_ends(self, record):
+            return record.seq[0:self.bases_start] + record.seq[len(record.seq) - self.bases_end:len(record.seq)], record.seq[self.bases_start:len(record.seq) - self.bases_end], record.letter_annotations["phred_quality"][self.bases_start:len(record.seq) - self.bases_end]
+
 
     def _value_pair_checker(self):
 
         if self.location == 'start':
 
             if self.bases_start is None:
-                raise exceptions.InvalidPairValueError("Ivalid Value-Pair:"+self.location+"-"+str(self.bases_start))
+                raise Exception("Ivalid Value-Pair:"+self.location+"-"+str(self.bases_start))
 
         if self.location == 'end':
 
             if self.bases_end is None:
-                raise exceptions.InvalidPairValueError("Ivalid Value-Pair:"+self.location+"-"+ str(self.bases_end))
+                raise Exception("Ivalid Value-Pair:"+self.location+"-"+ str(self.bases_end))
 
         if self.location == 'both_ends':
             if self.bases_start is None or self.bases_end is None:
-                raise exceptions.InvalidPairValueError("Ivalid Value-Pair:"+self.location+"-"+ str(self.bases_start) +":" + str(self.bases_end))
+                raise Exception("Ivalid Value-Pair:"+self.location+"-"+ str(self.bases_start) +":" + str(self.bases_end))
 
 
 def guess_file_format(handle):
@@ -112,7 +156,7 @@ def _find_motif(record, motif):
         yield (int(match.start()), int(match.end()))
 
 
-def batch_iterator(self,iterator, batch_size):
+def batch_iterator(iterator, batch_size):
     """
     Returns lists of length batch_size.
 
@@ -135,7 +179,7 @@ def batch_iterator(self,iterator, batch_size):
         batch = []
         while len(batch) < batch_size:
             try:
-                entry = iterator.__next__()
+                entry = iterator.next()
             except StopIteration:
                 entry = None
             if entry is None:

@@ -570,6 +570,7 @@ def rna2dna(input_handle, output_handle):
         record.seq = record.seq.back_transcribe()
         SeqIO.write(record, output_handle, file_format)
 
+
 def extract(input_handle, output_handle, location, number_bp_start, number_bp_end):
     """
 
@@ -580,7 +581,11 @@ def extract(input_handle, output_handle, location, number_bp_start, number_bp_en
     :param number_bp_end:   number of base pairs in the end
     :return:
     """
-    extractor = fastools.SeqExtractor(input_handle,output_handle,location,number_bp_start,number_bp_end)
+    file_format = fastools.guess_file_format(input_handle)
+    print "Extracting sequence from file with format %s " % file_format
+
+    extractor = fastools.SeqExtractor(input_handle,output_handle,location,number_bp_start,number_bp_end, file_format)
+    extractor.extractor()
 
 def main():
     """
