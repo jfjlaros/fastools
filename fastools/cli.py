@@ -582,8 +582,15 @@ def extract(input_handle, output_handle, location, number_bp_start, number_bp_en
     :return:
     """
     file_format = fastools.guess_file_format(input_handle)
+    if file_format == "fasta":
+        raise Exception("Extract Function Only works with Fastq Files")
+
     extractor = fastools.SeqExtractor(input_handle,output_handle,location,number_bp_start,number_bp_end, file_format)
-    extractor.extractor()
+    records = extractor.extractor()
+
+    for record in records:
+        SeqIO.write(record, output_handle, file_format)
+
 
 def main():
     """
