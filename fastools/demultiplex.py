@@ -152,16 +152,6 @@ def guess(
         output_handle.write('{} {}\n'.format(i + 1, barcode))
 
 
-def umi_extractor(
-        input_handles,location, bases_from_start = None,
-        bases_from_end = None):
-
-    """Extracts the UMI either from the read or either from the index and appends it to the read
-    """
-    print "Extracting UMI"
-
-
-
 def demux(
         input_handles, barcodes_handle, in_read, start, end, mismatch,
         use_edit):
