@@ -20,6 +20,7 @@ class SeqExtractor(object):
     def extractor(self):
 
         record_iter = SeqIO.parse(open(self.input_handle.name), self.file_format)
+        handle = open(self.output_handle, "w")
 
         # batching makes it faster
         for i, batch in enumerate(batch_iterator(record_iter, 10000)):
@@ -40,25 +41,25 @@ class SeqExtractor(object):
                 record.letter_annotations = {}
                 record.seq = fixed_seq
                 record.letter_annotations["phred_quality"] = fixed_qual
-                record.id = str(self.append_identifier_to_read_header(record,seq_identifier))
-                print record.id
-                # adding identifier to read header
+                fixeid = self.append_identifier_to_read_header(record.description,seq_identifier)
+                record.description = ""
+                record.id = str(fixeid)
 
-        # write it to file
+                print "Record ",record.id
+                SeqIO.write(record, handle, self.file_format)
 
-    def append_identifier_to_read_header(self,record,identifier):
+
+    def append_identifier_to_read_header(self,description,identifier):
 
         header_format = guess_header_format(self.input_handle)
-        identifierToRead = record.description
 
         if header_format == "x":
-            identifierToRead = record.description.split(" ")[0] + "_" + identifier + " " + record.description.split(" ")[1]
+            return description.split(" ")[0] + "_" + identifier + " " + description.split(" ")[1]
         elif header_format == "normal":
-            identifierToRead = record.description.split("#")[0] + "_" + identifier + "#" + record.description.split("#")[1]
+            return description.split("#")[0] + "_" + identifier + "#" + description.split("#")[1]
         else:
             raise RuntimeError("Not Valid Header Format")
 
-        return  identifierToRead
 
     def extract_from_index2(self,record):
 

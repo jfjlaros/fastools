@@ -29,3 +29,4 @@ class TestSplitFasta(object):
             'one_counted.txt', '32989fa6c7577611c81d18479712589d')
         assert self._md5_check(
             'Unrecognised.txt', '7950997464325678f3f8c1f87d6511ec')
+

@@ -2,7 +2,6 @@
 Tests for demultiplex.
 """
 from StringIO import StringIO
-
 from fastools import demultiplex
 from jit_open import jit_open
 
