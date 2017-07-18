@@ -45,7 +45,6 @@ class SeqExtractor(object):
                 record.description = ""
                 record.id = str(fixeid)
 
-                print "Record ",record.id
                 SeqIO.write(record, handle, self.file_format)
 
 
