@@ -23,6 +23,7 @@ class SeqExtractor(object):
 
         # batching makes it faster
         for i, batch in enumerate(batch_iterator(record_iter, 10000)):
+
             for record in batch:
 
                 if self.location == 'start':
@@ -32,22 +33,52 @@ class SeqExtractor(object):
                 elif self.location == 'both_ends':
                     seq_identifier, fixed_seq, fixed_qual = self.extract_from_both_ends(record)
                 else:
-                    self.extract_from_index(record)
+                    seq_identifier = self.extract_from_index2(record)
                     fixed_seq = record.seq
                     fixed_qual =  record.letter_annotations["phred_quality"]
 
                 record.letter_annotations = {}
                 record.seq = fixed_seq
                 record.letter_annotations["phred_quality"] = fixed_qual
+                record.id = str(self.append_identifier_to_read_header(record,seq_identifier))
+                print record.id
+                # adding identifier to read header
 
-    # in that case it should be index2
-    def extract_from_index(self,record):
+        # write it to file
+
+    def append_identifier_to_read_header(self,record,identifier):
+
         header_format = guess_header_format(self.input_handle)
+        identifierToRead = record.description
+
+        if header_format == "x":
+            identifierToRead = record.description.split(" ")[0] + "_" + identifier + " " + record.description.split(" ")[1]
+        elif header_format == "normal":
+            identifierToRead = record.description.split("#")[0] + "_" + identifier + "#" + record.description.split("#")[1]
+        else:
+            raise RuntimeError("Not Valid Header Format")
+
+        return  identifierToRead
+
+    def extract_from_index2(self,record):
+
+        header_format = guess_header_format(self.input_handle)
+
         if header_format == "x":
            try:
-               record.description.split("+")[1]
+               return  record.description.split("+")[1]
            except:
-               raise RuntimeError("No second index found in fasta header: "+record.description)
+               raise RuntimeError("No second index found in fasta header: "+ record.description)
+
+        elif header_format == "normal":
+            try:
+                # not sure though if second index supported here. COuld not find something for this format
+                return record.description.split('#')[1].split("+")[1].split("/")[0]
+
+            except:
+                raise RuntimeError("No second index found in fasta header: "+ record.description)
+        else:
+            return RuntimeError("Uknown Header Format")
 
 
     def extract_from_start(self, record):
