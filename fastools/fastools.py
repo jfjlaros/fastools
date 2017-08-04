@@ -4,7 +4,7 @@ from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
 
 
-class SeqExtractor(object):
+class UMIExtractor(object):
 
     def __init__(self, input_handle, output_handle, location, bases_start, bases_end, file_format ):
 
@@ -39,14 +39,14 @@ class SeqExtractor(object):
                 record.letter_annotations = {}
                 record.seq = fixed_seq
                 record.letter_annotations["phred_quality"] = fixed_qual
-                fixeid = self.append_identifier_to_read_header(record.description,seq_identifier)
+                fixeid = self.append_umi_identifier_to_read_header(record.description,seq_identifier)
                 record.description = ""
                 record.id = str(fixeid)
 
                 SeqIO.write(record, self.output_handle, self.file_format)
 
 
-    def append_identifier_to_read_header(self,description,identifier):
+    def append_umi_identifier_to_read_header(self,description,identifier):
 
         header_format = guess_header_format(self.input_handle)
 
@@ -105,6 +105,45 @@ class SeqExtractor(object):
             if self.bases_start is None or self.bases_end is None:
                 raise Exception("Ivalid Value-Pair:"+self.location+"-"+ str(self.bases_start) +":" + str(self.bases_end))
 
+
+class UMIAppender(object):
+
+    def __init__(self, input_handle, output_handle,file_format ):
+
+        self.input_handle = input_handle
+        self.output_handle = output_handle
+        self.file_format = file_format
+
+    def get_umi_identifier_from_read_header(self,description):
+
+        header_format = guess_header_format(self.input_handle)
+
+        if header_format == "x":
+            return  description.split("_")[1].split(" ")[0]
+        elif header_format == "normal":
+            return  description.split("_")[1].split("#")[0]
+        else:
+            raise RuntimeError("Not Valid Header Format")
+
+    def umi_appender(self):
+
+
+        record_iter = SeqIO.parse(open(self.input_handle.name), self.file_format)
+
+        for i, batch in enumerate(batch_iterator(record_iter, 10000)):
+            for record in batch:
+
+                umi = self.get_umi_identifier_from_read_header(record.description)
+                seq = record.seq
+                fixed_seq = umi + seq
+                fixed_qual = [40]*len(umi)+record.letter_annotations["phred_quality"]
+
+                record.letter_annotations = {}
+                record.seq = fixed_seq
+                record.letter_annotations["phred_quality"] = fixed_qual
+
+
+                SeqIO.write(record,self.output_handle, self.file_format)
 
 def guess_file_format(handle):
     """

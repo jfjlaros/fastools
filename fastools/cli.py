@@ -583,12 +583,24 @@ def umi_extractor(input_handle, output_handle, location, number_bp_start, number
     """
     file_format = fastools.guess_file_format(input_handle)
     if file_format == "fasta":
-        raise Exception("Extract Function Only works with Fastq File")
+        raise Exception("Extract Function Only works with FASTQ File")
 
-    extractor = fastools.SeqExtractor(input_handle,output_handle,location,number_bp_start,number_bp_end, file_format)
+    extractor = fastools.UMIExtractor(input_handle,output_handle,location,number_bp_start,number_bp_end, file_format)
     extractor.extractor()
 
+# Assumed that the UMI is appended to the read header
+def umi_appender(input_handle, output_handle):
+    """"
+    #:param input_handle:  Open readable handle to a FASTA / FASTQ file.
+    #:param output_handle: Open writable handle to a FASTA / FASTQ file
+    """
+    file_format = fastools.guess_file_format(input_handle)
+    if file_format == "fasta":
+        raise Exception("Appender works only on FASTQ files")
 
+    extractor = fastools.UMIAppender(input_handle, output_handle,
+                                      file_format)
+    extractor.umi_appender()
 
 def main():
     """
@@ -835,11 +847,16 @@ def main():
         'rna2dna', parents=[file_parser], description=doc_split(rna2dna))
     parser_rna2dna.set_defaults(func=rna2dna)
 
-    parser_extract = subparsers.add_parser(
+    parser_umi_extract = subparsers.add_parser(
         'umi_extractor', parents=[file_parser,number_bp_start_parser,number_bp_end_parser],
         description= doc_split(umi_extractor))
-    parser_extract.add_argument( 'location', metavar='LOCATION', type=str, choices=['index2','start','end','both_ends'], help='Location from where to extract the read')
-    parser_extract.set_defaults(func = umi_extractor)
+    parser_umi_extract.add_argument( 'location', metavar='LOCATION', type=str, choices=['index2','start','end','both_ends'], help='Location from where to extract the read')
+    parser_umi_extract.set_defaults(func = umi_extractor)
+
+    parser_umi_appender = subparsers.add_parser(
+        'umi_appender', parents=[file_parser],
+        description= doc_split(umi_appender))
+    parser_umi_appender.set_defaults(func = umi_appender)
 
     sys.stdin = Peeker(sys.stdin)
 
