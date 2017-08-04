@@ -571,7 +571,7 @@ def rna2dna(input_handle, output_handle):
         SeqIO.write(record, output_handle, file_format)
 
 
-def extract(input_handle, output_handle, location, number_bp_start, number_bp_end):
+def umi_extractor(input_handle, output_handle, location, number_bp_start, number_bp_end):
     """
 
     :param input_handle:  Open readable handle to a FASTA/FASTQ file.
@@ -836,10 +836,10 @@ def main():
     parser_rna2dna.set_defaults(func=rna2dna)
 
     parser_extract = subparsers.add_parser(
-        'extract', parents=[file_parser,number_bp_start_parser,number_bp_end_parser],
-        description= doc_split(extract))
+        'umi_extractor', parents=[file_parser,number_bp_start_parser,number_bp_end_parser],
+        description= doc_split(umi_extractor))
     parser_extract.add_argument( 'location', metavar='LOCATION', type=str, choices=['index2','start','end','both_ends'], help='Location from where to extract the read')
-    parser_extract.set_defaults(func = extract)
+    parser_extract.set_defaults(func = umi_extractor)
 
     sys.stdin = Peeker(sys.stdin)
 
