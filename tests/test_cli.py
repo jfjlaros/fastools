@@ -161,24 +161,23 @@ class TestCLI(object):
 
     def test_extract_start(self):
 
-        temp = tempfile.NamedTemporaryFile()
-        cli.extract(open('data/demultiplex.fq'), temp.name, 'start', 5, None)
-        assert filecmp.cmp(temp.name,'data/demultiplex_processed_start.fq',shallow=False)
+
+        cli.extract(open('data/demultiplex.fq'), self._output, 'start', 5, None)
+        assert self._md5_check('689bc362e4b981da50fdefdb3f275c4f')
+
 
     def test_extract_end(self):
 
-        temp = tempfile.NamedTemporaryFile()
-        cli.extract(open('data/demultiplex.fq'), temp.name, 'end', None, 5)
-        assert filecmp.cmp(temp.name,'data/demultiplex_processed_end.fq',shallow=False)
+        cli.extract(open('data/demultiplex.fq'),  self._output, 'end', None, 5)
+        assert self._md5_check('650e342c29f9939fb2a3aeb39e97f50b')
+
 
     def test_extract_both_ends(self):
 
-        temp = tempfile.NamedTemporaryFile()
-        cli.extract(open('data/demultiplex_x.fq'), temp.name, 'both_ends', 5, 5)
-        assert filecmp.cmp(temp.name,'data/demultiplex_x_both_sides.fq',shallow=False)
+        cli.extract(open('data/demultiplex_x.fq'),  self._output, 'both_ends', 5, 5)
+        assert self._md5_check('f683c1a447cdcb0417549c07fbb2a1fb')
 
     def test_extract_second_index(self):
 
-        temp = tempfile.NamedTemporaryFile()
-        cli.extract(open('data/demultiplex_x_dual_index.fq'), temp.name, 'index2', None, None)
-        assert filecmp.cmp(temp.name,'data/demultiplex_x_dual_index_processed.fq',shallow=False)
+        cli.extract(open('data/demultiplex_x_dual_index.fq'), self._output, 'index2', None, None)
+        assert  self._md5_check("c754a56665fba32651d02342c89eb280")

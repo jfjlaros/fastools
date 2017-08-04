@@ -20,8 +20,6 @@ class SeqExtractor(object):
     def extractor(self):
 
         record_iter = SeqIO.parse(open(self.input_handle.name), self.file_format)
-        handle = open(self.output_handle, "w")
-
         # batching makes it faster
         for i, batch in enumerate(batch_iterator(record_iter, 10000)):
 
@@ -45,7 +43,7 @@ class SeqExtractor(object):
                 record.description = ""
                 record.id = str(fixeid)
 
-                SeqIO.write(record, handle, self.file_format)
+                SeqIO.write(record, self.output_handle, self.file_format)
 
 
     def append_identifier_to_read_header(self,description,identifier):
