@@ -25,7 +25,6 @@ _get_barcode = {
     'unknown': lambda record: record.seq}
 
 
-
 class Extractor(object):
     def __init__(self, handle, in_read=False, start=None, end=None):
         """Configure a barcode extractor.
@@ -221,8 +220,6 @@ def main():
         '-d', dest='use_edit', action='store_true',
         help='use Levenshtein distance' + default_str)
     parser_demux.set_defaults(func=demux)
-
-
 
     sys.stdin = Peeker(sys.stdin)
 

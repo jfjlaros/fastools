@@ -1,5 +1,4 @@
-"""
-Split a FASTA file based on the occurrence of markers.
+"""Split a FASTA file based on the occurrence of markers.
 
 
 The output is FASTA-like, depending on the replacement defined in the library.
@@ -21,8 +20,7 @@ from . import version
 
 
 def add_to_library(library, line):
-    """
-    Add a line from the library file to the library.
+    """Add a line from the library file to the library.
 
     A library entry contains:
     - name of the marker
@@ -44,8 +42,7 @@ def add_to_library(library, line):
 
 
 def write_output(entry, description, sequence):
-    """
-    Write a sequence and its header to its .txt file.
+    """Write a sequence and its header to its .txt file.
 
     While writing, also increase the marker counter and count the number of
     times this particular sequence has been found.
@@ -64,8 +61,7 @@ def write_output(entry, description, sequence):
 
 
 def split_fasta(input_handle, library_handle, output_handle):
-    """
-    Split a FASTA file based on the occurrence of markers.
+    """Split a FASTA file based on the occurrence of markers.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream library_handle: Open readable handle to the library file.
@@ -117,8 +113,7 @@ def split_fasta(input_handle, library_handle, output_handle):
 
 
 def main():
-    """
-    Main entry point.
+    """Main entry point.
     """
     usage = __doc__.split("\n\n\n")
     parser = argparse.ArgumentParser(

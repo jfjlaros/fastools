@@ -1,25 +1,22 @@
 import argparse
 import csv
 import itertools
-import urllib2
 import random
 import sys
+import urllib2
+
+from Bio import Entrez, Restriction, Seq, SeqIO, pairwise2
+from Bio.Alphabet import IUPAC
+from Bio.SeqRecord import SeqRecord
 import Levenshtein
 
-from Bio import Entrez, pairwise2, Restriction
-from Bio.Alphabet import IUPAC
-from .peeker import Peeker
 from . import doc_split, version, usage
 from . import fastools
-
-
-from Bio import Seq, SeqIO
-from Bio.SeqRecord import SeqRecord
+from .peeker import Peeker
 
 
 def sanitise(input_handle, output_handle):
-    """
-    Convert a FASTA/FASTQ file to a standard FASTA/FASTQ file.
+    """Convert a FASTA/FASTQ file to a standard FASTA/FASTQ file.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
@@ -31,8 +28,7 @@ def sanitise(input_handle, output_handle):
 
 
 def fa2fq(input_handle, output_handle, quality):
-    """
-    Convert a FASTA file to a FASTQ file.
+    """Convert a FASTA file to a FASTQ file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream output_handle: Open writable handle to a FASTQ file.
@@ -45,8 +41,7 @@ def fa2fq(input_handle, output_handle, quality):
 
 
 def fq2fa(input_handle, output_handle):
-    """
-    Convert a FASTQ file to a FASTA file.
+    """Convert a FASTQ file to a FASTA file.
 
     :arg stream input_handle: Open readable handle to a FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA file.
@@ -61,8 +56,7 @@ def fq2fa(input_handle, output_handle):
 
 
 def aln(input_handles):
-    """
-    Calculate the Levenshtein distance between two FASTA files.
+    """Calculate the Levenshtein distance between two FASTA files.
 
     :arg stream input_handles: Open readable handles to FASTA files.
     :return list(tuple(str, str, int)): List of distances.
@@ -78,8 +72,7 @@ def aln(input_handles):
 
 
 def add(input_handle, output_handle, sequence, quality):
-    """
-    Add a sequence to the 5' end of each read in a FASTQ file.
+    """Add a sequence to the 5' end of each read in a FASTQ file.
 
     :arg stream input_handle: Open readable handle to a FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTQ file.
@@ -97,8 +90,7 @@ def add(input_handle, output_handle, sequence, quality):
 
 
 def maln(input_handle):
-    """
-    Calculate the Hamming distance between all sequences in a FASTA file.
+    """Calculate the Hamming distance between all sequences in a FASTA file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :return list(tuple(str, str, int)): List of distances.
@@ -119,8 +111,7 @@ def maln(input_handle):
 
 
 def length(input_handle):
-    """
-    Report the lengths of all FASTA records in a file.
+    """Report the lengths of all FASTA records in a file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :return list(int): List of lengths.
@@ -134,15 +125,13 @@ def length(input_handle):
 
 
 def list_enzymes():
-    """
-    Return a list of supported restiction enzymes.
+    """Return a list of supported restiction enzymes.
     """
     return Restriction.Restriction_Dictionary.rest_dict.keys()
 
 
 def restrict(input_handle, enzymes):
-    """
-    Fragment a genome with restriction enzymes.
+    """Fragment a genome with restriction enzymes.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg list(str) enzymes: List of restiction enzymes.
@@ -163,8 +152,7 @@ def restrict(input_handle, enzymes):
 
 
 def collapse(word, max_stretch):
-    """
-    Collapse stretches of single letters in a word that exceed a certain
+    """Collapse stretches of single letters in a word that exceed a certain
     length.
 
     :arg str word: Non empty input string.
@@ -192,8 +180,7 @@ def collapse(word, max_stretch):
 
 
 def collapse_fasta(input_handle, output_handle, stretch):
-    """
-    Remove all mononucleotide stretches from a FASTA file.
+    """Remove all mononucleotide stretches from a FASTA file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream output_handle: Open writeable handle to a FASTA file.
@@ -213,8 +200,7 @@ def collapse_fasta(input_handle, output_handle, stretch):
 
 
 def s2i(input_handle, output_handle):
-    """
-    Convert sanger FASTQ to illumina FASTQ.
+    """Convert sanger FASTQ to illumina FASTQ.
 
     :arg stream input_handle: Open readable handle to a FASTQ file.
     :arg stream output_handle: Open writeable handle to a FASTQ file.
@@ -222,9 +208,9 @@ def s2i(input_handle, output_handle):
     return SeqIO.convert(
         input_handle, 'fastq', output_handle, 'fastq-illumina')
 
+
 def count_tags(input_handle, sequence, mismatches):
-    """
-    Count tags in a FASTA file.
+    """Count tags in a FASTA file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg str sequence: The sequence that needs to be counted.
@@ -245,8 +231,7 @@ def count_tags(input_handle, sequence, mismatches):
 
 
 def select(input_handle, output_handle, first, last):
-    """
-    Select a substring from every read.
+    """Select a substring from every read.
     Positions are one-based and inclusive.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
@@ -262,8 +247,7 @@ def select(input_handle, output_handle, first, last):
 
 
 def rselect(input_handle, output_handle, name, first, last):
-    """
-    Select a substring from every read.
+    """Select a substring from every read.
     Positions are one-based and inclusive.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
@@ -288,8 +272,7 @@ def rselect(input_handle, output_handle, name, first, last):
 
 
 def fa2gb(input_handle, output_handle, name):
-    """
-    Convert a FASTA file to a GenBank file.
+    """Convert a FASTA file to a GenBank file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream output_handle: Open writable handle to a GenBank file.
@@ -303,8 +286,7 @@ def fa2gb(input_handle, output_handle, name):
 
 
 def gb2fa(input_handle, output_handle):
-    """
-    Convert a GenBank file to a FASTA file.
+    """Convert a GenBank file to a FASTA file.
 
     :arg stream input_handle: Open readable handle to a GenBank file.
     :arg stream output_handle: Open writable handle to a FASTA file.
@@ -314,8 +296,7 @@ def gb2fa(input_handle, output_handle):
 
 
 def mangle(input_handle, output_handle):
-    """
-    Calculate the complement (not reverse-complement) of a FASTA sequence.
+    """Calculate the complement (not reverse-complement) of a FASTA sequence.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream output_handle: Open writable handle to a FASTA file.
@@ -339,9 +320,9 @@ def mangle(input_handle, output_handle):
             '{}'.format(record.id))
         SeqIO.write(new_record, output_handle, 'fasta')
 
+
 def generate_dna(length, output_handle, name, description):
-    """
-    Generate a DNA sequence in FASTA format.
+    """Generate a DNA sequence in FASTA format.
 
     :arg int length: Length of the DNA sequence.
     :arg stream output_handle: Open writable handle to a FASTA file.
@@ -359,8 +340,7 @@ def generate_dna(length, output_handle, name, description):
 
 
 def get_reference(name, email, output_handle, start=0, stop=0, orientation=0):
-    """
-    Retrieve a reference sequence and find the location of a specific gene.
+    """Retrieve a reference sequence and find the location of a specific gene.
 
     :arg str name: An accession number.
     :arg str email: An email address.
@@ -384,9 +364,9 @@ def get_reference(name, email, output_handle, start=0, stop=0, orientation=0):
 
     output_handle.write(handle.read())
 
+
 def cat(input_handle):
-    """
-    Return the sequence content of a FASTA file.
+    """Return the sequence content of a FASTA file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     """
@@ -395,8 +375,7 @@ def cat(input_handle):
 
 
 def raw2fa(input_handle, output_handle, name, description):
-    """
-    Make a FASTA file from a raw sequence.
+    """Make a FASTA file from a raw sequence.
 
     :arg stream input_handle: Open readable handle to a raw sequence file.
     :arg stream output_handle: Open writeable handle to a FASTA file.
@@ -409,8 +388,7 @@ def raw2fa(input_handle, output_handle, name, description):
 
 
 def descr(input_handle):
-    """
-    Return the description of all records in a FASTA file.
+    """Return the description of all records in a FASTA file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     """
@@ -419,8 +397,7 @@ def descr(input_handle):
 
 
 def seq_split(input_handle, output_handles, sequence):
-    """
-    split a FASTA/FASTQ file based on containing part of the sequence
+    """split a FASTA/FASTQ file based on containing part of the sequence
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handles: List of open writable handles to FASTA/FASTQ
@@ -430,16 +407,15 @@ def seq_split(input_handle, output_handles, sequence):
 
     file_format = fastools.guess_file_format(input_handle)
 
-    for record in SeqIO.parse(input_handle, file_format) :
+    for record in SeqIO.parse(input_handle, file_format):
         if sequence in record.seq:
-            SeqIO.write(record,output_handles[0], file_format)
+            SeqIO.write(record, output_handles[0], file_format)
         else:
-            SeqIO.write(record,output_handles[1], file_format)
+            SeqIO.write(record, output_handles[1], file_format)
 
 
 def length_split(input_handle, output_handles, length):
-    """
-    Split a FASTA/FASTQ file on length.
+    """Split a FASTA/FASTQ file on length.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handles: List of open writable handles to FASTA/FASTQ
@@ -456,8 +432,7 @@ def length_split(input_handle, output_handles, length):
 
 
 def reverse(input_handle, output_handle):
-    """
-    Make the reverse complement a FASTA/FASTQ file.
+    """Make the reverse complement a FASTA/FASTQ file.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
@@ -472,8 +447,7 @@ def reverse(input_handle, output_handle):
 
 
 def merge(input_handles, output_handle, fill):
-    """
-    Merge two FASTA files.
+    """Merge two FASTA files.
 
     :arg stream input_handles: List of open readable handle to FASTA/FASTQ
         files.
@@ -490,8 +464,8 @@ def merge(input_handles, output_handle, fill):
 
 
 def fa_motif2bed(input_handle, output_handle, motif):
-    """
-    Find a given sequence in a FASTA file and write the results to a Bed file.
+    """Find a given sequence in a FASTA file and write the results to a Bed
+    file.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream output_handle: Open writable handle to a BED file.
@@ -504,9 +478,8 @@ def fa_motif2bed(input_handle, output_handle, motif):
 
 
 def edit(input_handle, edits_handle, output_handle):
-    """
-    Replace regions in a reference sequence. The header of the edits file must
-    have the following strucure:
+    """Replace regions in a reference sequence. The header of the edits file
+    must have the following strucure:
     >name chrom:start_end
 
     :arg stream input_handle: Open readable handle to a FASTA file.
@@ -524,8 +497,7 @@ def edit(input_handle, edits_handle, output_handle):
 
 
 def csv2fa2(input_handle, output_handles, skip_header=False):
-    """
-    Convert a CSV file to two FASTA files.
+    """Convert a CSV file to two FASTA files.
 
     :arg stream input_handle: Open readable handle to a CSV file.
     :arg list(stream) output_handles: List of open writable handles to FASTA
@@ -544,8 +516,7 @@ def csv2fa2(input_handle, output_handles, skip_header=False):
 
 
 def dna2rna(input_handle, output_handle):
-    """
-    Convert the FASTA/FASTQ content from DNA to RNA.
+    """Convert the FASTA/FASTQ content from DNA to RNA.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
@@ -558,8 +529,7 @@ def dna2rna(input_handle, output_handle):
 
 
 def rna2dna(input_handle, output_handle):
-    """
-    Convert the FASTA/FASTQ content from RNA to DNA.
+    """Convert the FASTA/FASTQ content from RNA to DNA.
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
@@ -571,40 +541,46 @@ def rna2dna(input_handle, output_handle):
         SeqIO.write(record, output_handle, file_format)
 
 
-def umi_extractor(input_handle, output_handle, location, number_bp_start, number_bp_end):
+def umi_extractor(
+        input_handle, output_handle, location, number_bp_start, number_bp_end):
+    #FIXME: Missing title.
     """
 
-    :param input_handle:  Open readable handle to a FASTA/FASTQ file.
-    :param output_handle: Open writable handle to a FASTA/FASTQ file
-    :param location:      Location to extract the read sequence
-    :param number_bp_start: number of base pairs in the start
-    :param number_bp_end:   number of base pairs in the end
-    :return:
+    :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
+    :arg stream output_handle: Open writable handle to a FASTA/FASTQ file
+    :arg int location: Location to extract the read sequence
+    :arg int number_bp_start: number of base pairs in the start
+    :arg int number_bp_end: number of base pairs in the end
     """
     file_format = fastools.guess_file_format(input_handle)
-    if file_format == "fasta":
-        raise Exception("Extract Function Only works with FASTQ File")
+    if file_format == 'fasta':
+        raise Exception('Extract Function Only works with FASTQ File')
 
-    extractor = fastools.UMIExtractor(input_handle,output_handle,location,number_bp_start,number_bp_end, file_format)
+    extractor = fastools.UMIExtractor(
+        input_handle, output_handle, location, number_bp_start, number_bp_end,
+        file_format)
     extractor.extractor()
 
-# Assumed that the UMI is appended to the read header
-def umi_appender(input_handle, output_handle):
-    """"
-    #:param input_handle:  Open readable handle to a FASTA / FASTQ file.
-    #:param output_handle: Open writable handle to a FASTA / FASTQ file
-    """
-    file_format = fastools.guess_file_format(input_handle)
-    if file_format == "fasta":
-        raise Exception("Appender works only on FASTQ files")
 
-    extractor = fastools.UMIAppender(input_handle, output_handle,
-                                      file_format)
+def umi_appender(input_handle, output_handle):
+    #FIXME: Missing title.
+    """"
+
+    :arg stream input_handle: Open readable handle to a FASTA / FASTQ file.
+    :arg stream output_handle: Open writable handle to a FASTA / FASTQ file
+    """
+    # Assumed that the UMI is appended to the read header
+    file_format = fastools.guess_file_format(input_handle)
+    if file_format == 'fasta':
+        raise Exception('Appender works only on FASTQ files')
+
+    extractor = fastools.UMIAppender(
+        input_handle, output_handle, file_format)
     extractor.umi_appender()
 
+
 def main():
-    """
-    Main entry point.
+    """Main entry point.
     """
     input_parser = argparse.ArgumentParser(add_help=False)
     input_parser.add_argument(
@@ -643,7 +619,6 @@ def main():
     number_bp_end_parser.add_argument(
         '-nbe', dest='number_bp_end', type=int, default=None,
         help='number of base pairs from the end (%(type)s default=%(default)s)')
-
 
     seq_parser = argparse.ArgumentParser(add_help=False)
     seq_parser.add_argument(
@@ -848,15 +823,19 @@ def main():
     parser_rna2dna.set_defaults(func=rna2dna)
 
     parser_umi_extract = subparsers.add_parser(
-        'umi_extractor', parents=[file_parser,number_bp_start_parser,number_bp_end_parser],
+        'umi_extractor', parents=[
+            file_parser, number_bp_start_parser, number_bp_end_parser],
         description= doc_split(umi_extractor))
-    parser_umi_extract.add_argument( 'location', metavar='LOCATION', type=str, choices=['index2','start','end','both_ends'], help='Location from where to extract the read')
-    parser_umi_extract.set_defaults(func = umi_extractor)
+    parser_umi_extract.add_argument(
+        'location', metavar='LOCATION', type=str,
+        choices=['index2', 'start', 'end', 'both_ends'],
+        help='location from where to extract the read')
+    parser_umi_extract.set_defaults(func=umi_extractor)
 
     parser_umi_appender = subparsers.add_parser(
         'umi_appender', parents=[file_parser],
-        description= doc_split(umi_appender))
-    parser_umi_appender.set_defaults(func = umi_appender)
+        description=doc_split(umi_appender))
+    parser_umi_appender.set_defaults(func=umi_appender)
 
     sys.stdin = Peeker(sys.stdin)
 
@@ -906,5 +885,5 @@ def main():
             parser.error(error)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
