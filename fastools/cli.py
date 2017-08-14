@@ -4,12 +4,10 @@ import itertools
 import random
 import sys
 import urllib2
-
+import Levenshtein
 from Bio import Entrez, Restriction, Seq, SeqIO, pairwise2
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
-import Levenshtein
-
 from . import doc_split, version, usage
 from . import fastools
 from .peeker import Peeker
@@ -568,7 +566,6 @@ def umi_appender(input_handle, output_handle):
     :arg stream input_handle: Open readable handle to a FASTA / FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA / FASTQ file
     """
-    # Assumed that the UMI is appended to the read header
     file_format = fastools.guess_file_format(input_handle)
     if file_format == 'fasta':
         raise Exception('Appender works only on FASTQ files')

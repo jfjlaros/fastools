@@ -1,15 +1,13 @@
 from collections import defaultdict
-import re
-
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
+import re
 
 
 def guess_file_format(handle):
     """Guess the file type of an NGS data file.
 
     :arg file handle: Open readable handle to an NGS data file.
-
     :return str: Either 'fasta' or 'fastq'.
     """
     if handle.name != '<stdin>':
@@ -27,7 +25,6 @@ def guess_header_format(handle):
     """Guess the header format.
 
     :arg stream handle: Open readable handle to an NGS data file.
-
     :return str: Either 'normal', 'x' or 'unknown'.
     """
     if handle.name != '<stdin>':
@@ -49,19 +46,21 @@ def _write_seq(handle, seq, name, file_format='fasta'):
 
 
 def _edits_read(handle):
-    """Parse a FASTA file that contains edits.
+    """
+    Parse a FASTA file that contains edits.
 
-    :arg stream input_handle: Open readable handle to a FASTA file.
-
+    :arg stream handle: Open readable handle to a FASTA file.
     :returns dict: A list of edits (ranges and replacements) per chromosome.
     """
     records = defaultdict(list)
 
     for record in SeqIO.parse(handle, 'fasta'):
-         chrom, start, end = re.split(':|_', record.description.split()[-1])
-         records[chrom].append([int(start), int(end), record.seq])
+        chrom, start, end = re.split(':|_', record.description.split()[-1])
+        records[chrom].append([int(start), int(end), record.seq])
+
     for reference in records:
         records[reference].sort(reverse=True)
+
     return records
 
 
@@ -70,9 +69,7 @@ def _find_motif(record, motif):
 
     :arg SeqRecord record: Seq object which will be searched.
     :arg str motif: The sequence to be found.
-
-    :returns generator(tuple(int, int)): tuple of start and end of matches in
-        record.
+    :returns generator(tuple(int, int)): tuple of start and end of matches in record.
     """
     regex = re.compile(motif.strip(), re.IGNORECASE)
 
@@ -119,7 +116,8 @@ class UMIExtractor(object):
             bases_end, file_format):
 
         """Configure UMI extractor.
-        :arg stream input handle:  readable handle to a fastq file
+
+        :arg stream input_handle:  readable handle to a fastq file
         :arg stream output_handle: writable handle to an fastq file
         :arg str location: where the umis is located on the read: can be start,end,both_ends, index2
         :arg int bases_start: number of bases in the start where umi is located
@@ -157,7 +155,7 @@ class UMIExtractor(object):
                 else:
                     seq_identifier = self.extract_from_index2(record)
                     fixed_seq = record.seq
-                    fixed_qual =  record.letter_annotations['phred_quality']
+                    fixed_qual = record.letter_annotations['phred_quality']
 
                 record.letter_annotations = {}
                 record.seq = fixed_seq
@@ -170,7 +168,9 @@ class UMIExtractor(object):
                 SeqIO.write(record, self.output_handle, self.file_format)
 
     def append_umi_identifier_to_read_header(self, description, identifier):
-        """For a given read append the umi identifier to the read
+        """
+        For a given read append the umi identifier to the read
+
         :arg str identifier: umi sequence
         :arg str description: read description
         :return str: fixed read description with umi identifier included
@@ -186,9 +186,10 @@ class UMIExtractor(object):
         else:
             raise RuntimeError('Not Valid Header Format')
 
-    def extract_from_index2(self, record):
+    def extract_from_index2(self,record):
         """
         Extract the UMI sequence from index2
+
         :arg SeqIO record: sequence record
         :return str: extracted UMI sequence
         """
@@ -202,8 +203,6 @@ class UMIExtractor(object):
                         record.description))
         elif header_format == 'normal':
             try:
-                # Not sure though if second index supported here. Could not
-                # find something for this format.
                 return record.description.split(
                     '#')[1].split('+')[1].split('/')[0]
             except:
@@ -269,12 +268,15 @@ class UMIExtractor(object):
 
 
 class UMIAppender(object):
+    """
+    Configure UMI appender.
+
+    :arg stream input_handle:  readable handle to a fastq file
+    :arg stream output_handle: writable handle to an fastq file
+    :arg str file_format: file format
+    """
     def __init__(self, input_handle, output_handle, file_format):
-        """Configure UMI appender.
-        :arg stream input handle:  readable handle to a fastq file
-        :arg stream output_handle: writable handle to an fastq file
-        :arg str file_format: file format
-        """
+
         self.input_handle = input_handle
         self.output_handle = output_handle
         self.file_format = file_format
@@ -282,6 +284,7 @@ class UMIAppender(object):
     def get_umi_identifier_from_read_header(self, description):
         """
         Extract UMI identifier from read description
+
         :str description: read description
         :return str: UMI sequence
         """
