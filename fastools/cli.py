@@ -543,8 +543,8 @@ def rna2dna(input_handle, output_handle):
 
 def umi_extractor(
         input_handle, output_handle, location, number_bp_start, number_bp_end):
-    #FIXME: Missing title.
-    """
+
+    """Extract UMI from the fastq sequence
 
     :arg stream input_handle: Open readable handle to a FASTA/FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA/FASTQ file
@@ -563,8 +563,7 @@ def umi_extractor(
 
 
 def umi_appender(input_handle, output_handle):
-    #FIXME: Missing title.
-    """"
+    """"Append UMI to the fastq sequence
 
     :arg stream input_handle: Open readable handle to a FASTA / FASTQ file.
     :arg stream output_handle: Open writable handle to a FASTA / FASTQ file
