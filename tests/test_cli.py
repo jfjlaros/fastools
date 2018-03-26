@@ -1,6 +1,4 @@
-"""
-Tests for the fastools CLI.
-"""
+"""Tests for the fastools CLI."""
 import StringIO
 
 from Bio import SeqIO

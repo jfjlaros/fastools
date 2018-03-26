@@ -30,7 +30,6 @@ setup(
     entry_points = {
         'console_scripts': [
             'fastools = fastools.fastools:main',
-            'demultiplex = fastools.demultiplex:main',
             'split_fasta = fastools.split_fasta:main'
         ]
     },

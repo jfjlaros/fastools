@@ -1,6 +1,4 @@
-"""
-Tests for demultiplex.
-"""
+"""Tests for split_fasta."""
 import StringIO
 
 from fastools import split_fasta
