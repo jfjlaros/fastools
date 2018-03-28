@@ -3,7 +3,7 @@ import StringIO
 
 from Bio import SeqIO
 
-from fastools import fastools
+from fastools import cli as fastools
 
 from shared import md5_check
 
