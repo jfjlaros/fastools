@@ -489,7 +489,7 @@ def splitseq(input_handle, output_handles, sequence):
 
     file_format = guess_file_format(input_handle)
 
-    for record in SeqIO.parse(input_handle, file_format) :
+    for record in SeqIO.parse(input_handle, file_format):
         if sequence in record.seq:
             SeqIO.write(record,output_handles[0], file_format)
         else:
