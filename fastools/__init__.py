@@ -1,9 +1,6 @@
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
-
 from os.path import dirname, abspath
+
+from configparser import ConfigParser
 
 from .fastools import guess_file_format, guess_header_format
 from .peeker import Peeker

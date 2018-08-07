@@ -11,8 +11,8 @@ Per marker, two files are created:
 Format of the library file:
 name marker replacement
 """
-import argparse
-import sys
+from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
+from sys import stdout
 
 from Bio import SeqIO
 
@@ -115,20 +115,18 @@ def split_fasta(input_handle, library_handle, output_handle):
 def main():
     """Main entry point."""
     usage = __doc__.split("\n\n\n")
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=usage[0], epilog=usage[1])
+    parser = ArgumentParser(
+        formatter_class=RawDescriptionHelpFormatter, description=usage[0],
+        epilog=usage[1])
 
     parser.add_argument(
-        'input_handle', metavar='INPUT', type=argparse.FileType('r'),
-        help='input file')
+        'input_handle', metavar='INPUT', type=FileType('r'), help='input file')
     parser.add_argument(
-        'library_handle', metavar='LIBRARY', type=argparse.FileType('r'),
+        'library_handle', metavar='LIBRARY', type=FileType('r'),
         help='file containing markers')
     parser.add_argument(
-        '-o', dest='output_handle', metavar='OUTPUT',
-        type=argparse.FileType('w'), default=sys.stdout,
-        help='output file (default=stdout)')
+        '-o', dest='output_handle', metavar='OUTPUT', type=FileType('w'),
+        default=stdout, help='output file (default=stdout)')
     parser.add_argument('-v', action='version', version=version(parser.prog))
 
     args = parser.parse_args()

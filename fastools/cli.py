@@ -1,15 +1,13 @@
-import argparse
-import csv
-import random
-import sys
-
+from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
+from csv import Sniffer, reader as csv_reader
+from random import randint
+from sys import stdout, stderr
 from urllib.error import HTTPError
-
-import Levenshtein
 
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
 from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
+from Levenshtein import distance, hamming
 
 from . import doc_split, version, usage
 from .fastools import (
@@ -47,7 +45,7 @@ def aln(input_handles):
     for i in SeqIO.parse(input_handles[0], 'fasta'):
         for j in SeqIO.parse(input_handles[1], 'fasta'):
             distances.append(
-                (i.name, j.name, Levenshtein.distance(str(i.seq), str(j.seq))))
+                (i.name, j.name, distance(str(i.seq), str(j.seq))))
 
     return distances
 
@@ -89,10 +87,10 @@ def csv2fa2(input_handle, output_handles, skip_header=False):
         files.
     :arg bool skip_header: Ignore the first line of the CSV file.
     """
-    dialect = csv.Sniffer().sniff(input_handle.read(1024))
+    dialect = Sniffer().sniff(input_handle.read(1024))
     input_handle.seek(0)
 
-    reader = csv.reader(input_handle, dialect)
+    reader = csv_reader(input_handle, dialect)
     if skip_header:
         next(reader)
     for record in reader:
@@ -192,7 +190,7 @@ def fq2fa(input_handle, output_handle):
         for record in SeqIO.parse(input_handle, 'fastq'):
             SeqIO.write(record, output_handle, 'fasta')
     except ValueError as error:
-        sys.stderr.write('Error: {}\n'.format(error))
+        stderr.write('Error: {}\n'.format(error))
         emptyRecord = SeqRecord(Seq.Seq(''), '', '', '')
         SeqIO.write(emptyRecord, output_handle, 'fasta')
 
@@ -219,7 +217,7 @@ def gen(length, output_handle, name, description):
     seq = ''
 
     for i in range(length):
-        seq += dna[random.randint(0, 3)]
+        seq += dna[randint(0, 3)]
 
     record = SeqRecord(Seq.Seq(seq), name, '', description)
     SeqIO.write(record, output_handle, 'fasta')
@@ -245,7 +243,7 @@ def get(name, email, output_handle, start=0, stop=0, orientation=0):
         else:
             handle = Entrez.efetch(db='nuccore', rettype='fasta', id=name)
     except HTTPError: # URLError if NCBI is down.
-        sys.stderr.write('Error: could not retrieve {}\n'.format(name))
+        stderr.write('Error: could not retrieve {}\n'.format(name))
         return
 
     output_handle.write(handle.read())
@@ -299,13 +297,13 @@ def maln(input_handle):
 
     data = {x.name: str(x.seq) for x in SeqIO.parse(input_handle, 'fasta')}
     for j in data:
-        sys.stdout.write(j)
-    sys.stdout.write('\n')
+        stdout.write(j)
+    stdout.write('\n')
     for i in data:
-        sys.stdout.write(i)
+        stdout.write(i)
         for j in data:
-            sys.stdout.write(Levenshtein.hamming(data[i], data[j]))
-        sys.stdout.write('\n')
+            stdout.write(hamming(data[i], data[j]))
+        stdout.write('\n')
 
     return distances
 
@@ -519,39 +517,39 @@ def tagcount(input_handle, sequence, mismatches):
 
 def main():
     """Main entry point."""
-    input_parser = argparse.ArgumentParser(add_help=False)
+    input_parser = ArgumentParser(add_help=False)
     input_parser.add_argument(
-        'input_handle', metavar='INPUT', type=argparse.FileType('r'),
+        'input_handle', metavar='INPUT', type=FileType('r'),
         help='input file')
 
-    input2_parser = argparse.ArgumentParser(add_help=False)
+    input2_parser = ArgumentParser(add_help=False)
     input2_parser.add_argument(
-        'input_handles', metavar='INPUT', type=argparse.FileType('r'), nargs=2,
+        'input_handles', metavar='INPUT', type=FileType('r'), nargs=2,
         help='input files')
 
-    output_parser = argparse.ArgumentParser(add_help=False)
+    output_parser = ArgumentParser(add_help=False)
     output_parser.add_argument(
-        'output_handle', metavar='OUTPUT', type=argparse.FileType('w'),
+        'output_handle', metavar='OUTPUT', type=FileType('w'),
         help='output file')
 
-    output2_parser = argparse.ArgumentParser(add_help=False)
+    output2_parser = ArgumentParser(add_help=False)
     output2_parser.add_argument(
-        'output_handles', metavar='OUTPUT', type=argparse.FileType('w'),
-        nargs=2, help='output files')
+        'output_handles', metavar='OUTPUT', type=FileType('w'), nargs=2,
+        help='output files')
 
-    file_parser = argparse.ArgumentParser(
+    file_parser = ArgumentParser(
         add_help=False, parents=[input_parser, output_parser])
 
-    qual_parser = argparse.ArgumentParser(add_help=False)
+    qual_parser = ArgumentParser(add_help=False)
     qual_parser.add_argument(
         '-q', dest='quality', type=int, default=40,
         help='quality score (%(type)s default=%(default)s)')
 
-    seq_parser = argparse.ArgumentParser(add_help=False)
+    seq_parser = ArgumentParser(add_help=False)
     seq_parser.add_argument(
         'sequence', metavar='SEQ', type=str, help='a sequence (%(type)s)')
 
-    range_parser = argparse.ArgumentParser(add_help=False)
+    range_parser = ArgumentParser(add_help=False)
     range_parser.add_argument(
         'first', metavar='FIRST', type=int,
         help='first base of the selection (%(type)s)')
@@ -559,20 +557,21 @@ def main():
         'last', metavar='LAST', type=int,
         help='last base of the selection (%(type)s)')
 
-    name_parser = argparse.ArgumentParser(add_help=False)
+    name_parser = ArgumentParser(add_help=False)
     name_parser.add_argument(
         'name', metavar='ACCNO', type=str, help='accession number')
 
-    description_parser = argparse.ArgumentParser(add_help=False)
+    description_parser = ArgumentParser(add_help=False)
     description_parser.add_argument(
         'description', metavar='DESCR', type=str,
         help='descriptino of the DNA sequence')
 
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+    parser = ArgumentParser(
+        formatter_class=RawDescriptionHelpFormatter,
         description=usage[0], epilog=usage[1])
     parser.add_argument('-v', action='version', version=version(parser.prog))
     subparsers = parser.add_subparsers(dest='subcommand')
+    subparsers.required = True
 
     subparser = subparsers.add_parser(
         'add', parents=[file_parser, seq_parser, qual_parser],
@@ -613,7 +612,7 @@ def main():
         'edit', parents=[input_parser, output_parser],
         description=doc_split(edit))
     subparser.add_argument(
-        'edits_handle', metavar='EDITS', type=argparse.FileType('r'),
+        'edits_handle', metavar='EDITS', type=FileType('r'),
         help='FASTA file containing edits')
     subparser.set_defaults(func=edit)
 
@@ -749,7 +748,7 @@ def main():
         help='amount of mismatches allowed (%(type)s default=%(default)s)')
     subparser.set_defaults(func=tagcount)
 
-    sys.stdin = Peeker(sys.stdin)
+    stdin = Peeker(stdin)
 
     try:
         args = parser.parse_args()
@@ -758,38 +757,38 @@ def main():
 
     if args.subcommand == 'aln':
         for i in aln(args.input_handles):
-            sys.stdout.write('{} {} {}'.format(*i))
+            stdout.write('{} {} {}'.format(*i))
 
     elif args.subcommand == 'length':
-        sys.stdout.write(
+        stdout.write(
             ' '.join(map(lambda x: str(x), length(args.input_handle))))
 
     elif args.subcommand == 'list_enzymes':
-        sys.stdout.write('\n'.join(list_enzymes()))
+        stdout.write('\n'.join(list_enzymes()))
 
     elif args.subcommand == 'restrict':
-        sys.stdout.write(' '.join(
+        stdout.write(' '.join(
             map(lambda x: str(x), restrict(args.input_handle, args.enzymes))))
 
     elif args.subcommand == 'collapse':
-        sys.stdout.write('Collapsed {} stretches longer than {}.'.format(
+        stdout.write('Collapsed {} stretches longer than {}.'.format(
             collapse_fasta(
                 args.input_handle, args.output_handle, args.max_stretch),
             args.max_stretch))
 
     elif args.subcommand == 's2i':
-        sys.stdout.write('converted {} records'.format(s2i(
+        stdout.write('converted {} records'.format(s2i(
             args.input_handle, args.output_handle)))
 
     elif args.subcommand == 'tagcount':
-        sys.stdout.write(
+        stdout.write(
             count_tags(args.input_handle, args.sequence, args.mismatches))
 
     elif args.subcommand == 'cat':
-        sys.stdout.write('\n'.join(cat(args.input_handle)))
+        stdout.write('\n'.join(cat(args.input_handle)))
 
     elif args.subcommand == 'descr':
-        sys.stdout.write('\n'.join(descr(args.input_handle)))
+        stdout.write('\n'.join(descr(args.input_handle)))
 
     else:
         try:

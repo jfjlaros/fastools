@@ -1,6 +1,5 @@
-import re
-
 from collections import defaultdict
+from re import compile as re_compile, split as re_split, IGNORECASE
 
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -44,7 +43,7 @@ def _edits_read(handle):
     records = defaultdict(list)
 
     for record in SeqIO.parse(handle, 'fasta'):
-         chrom, start, end = re.split(':|_', record.description.split()[-1])
+         chrom, start, end = re_split(':|_', record.description.split()[-1])
          records[chrom].append([int(start), int(end), record.seq])
     for reference in records:
         records[reference].sort(reverse=True)
@@ -60,7 +59,7 @@ def _find_motif(record, motif):
     :returns generator(tuple(int, int)): tuple of start and end of matches in
         record.
     """
-    regex = re.compile(motif.strip(), re.IGNORECASE)
+    regex = re_compile(motif.strip(), IGNORECASE)
 
     for match in regex.finditer(str(record.seq)):
         yield (int(match.start()), int(match.end()))
