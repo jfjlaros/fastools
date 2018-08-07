@@ -1,9 +1,9 @@
 import argparse
 import csv
-import itertools
-import urllib2
 import random
 import sys
+
+from urllib.error import HTTPError
 
 import Levenshtein
 
@@ -94,7 +94,7 @@ def csv2fa2(input_handle, output_handles, skip_header=False):
 
     reader = csv.reader(input_handle, dialect)
     if skip_header:
-        reader.next()
+        next(reader)
     for record in reader:
         _write_seq(output_handles[0], record[1], record[0])
         _write_seq(output_handles[1], record[2], record[0])
@@ -191,8 +191,8 @@ def fq2fa(input_handle, output_handle):
     try:
         for record in SeqIO.parse(input_handle, 'fastq'):
             SeqIO.write(record, output_handle, 'fasta')
-    except ValueError, error:
-        print 'Error: {}'.format(error)
+    except ValueError as error:
+        sys.stderr.write('Error: {}\n'.format(error))
         emptyRecord = SeqRecord(Seq.Seq(''), '', '', '')
         SeqIO.write(emptyRecord, output_handle, 'fasta')
 
@@ -244,7 +244,7 @@ def get(name, email, output_handle, start=0, stop=0, orientation=0):
                 seq_stop=stop, strand=orientation)
         else:
             handle = Entrez.efetch(db='nuccore', rettype='fasta', id=name)
-    except urllib2.HTTPError: # URLError if NCBI is down.
+    except HTTPError: # URLError if NCBI is down.
         sys.stderr.write('Error: could not retrieve {}\n'.format(name))
         return
 
@@ -299,13 +299,13 @@ def maln(input_handle):
 
     data = {x.name: str(x.seq) for x in SeqIO.parse(input_handle, 'fasta')}
     for j in data:
-        print j,
-    print
+        sys.stdout.write(j)
+    sys.stdout.write('\n')
     for i in data:
-        print i,
+        sys.stdout.write(i)
         for j in data:
-            print Levenshtein.hamming(data[i], data[j]),
-        print
+            sys.stdout.write(Levenshtein.hamming(data[i], data[j]))
+        sys.stdout.write('\n')
 
     return distances
 
@@ -344,7 +344,7 @@ def merge(input_handles, output_handle, fill):
     :arg stream output_handle: Open writable handle to a FASTA/FASTQ file.
     :arg int fill: Amount of 'N's to be added between the reads.
     """
-    for records in itertools.izip(
+    for records in zip(
             SeqIO.parse(input_handles[0], 'fasta'),
             SeqIO.parse(input_handles[1], 'fasta')):
         record = SeqRecord(
@@ -753,46 +753,49 @@ def main():
 
     try:
         args = parser.parse_args()
-    except IOError, error:
+    except IOError as error:
         parser.error(error)
 
     if args.subcommand == 'aln':
         for i in aln(args.input_handles):
-            print '{} {} {}'.format(*i)
+            sys.stdout.write('{} {} {}'.format(*i))
 
     elif args.subcommand == 'length':
-        print ' '.join(map(lambda x: str(x), length(args.input_handle)))
+        sys.stdout.write(
+            ' '.join(map(lambda x: str(x), length(args.input_handle))))
 
     elif args.subcommand == 'list_enzymes':
-        print '\n'.join(list_enzymes())
+        sys.stdout.write('\n'.join(list_enzymes()))
 
     elif args.subcommand == 'restrict':
-        print ' '.join(
-            map(lambda x: str(x), restrict(args.input_handle, args.enzymes)))
+        sys.stdout.write(' '.join(
+            map(lambda x: str(x), restrict(args.input_handle, args.enzymes))))
 
     elif args.subcommand == 'collapse':
-        print 'Collapsed {} stretches longer than {}.'.format(
-            collapse(args.input_handle, args.output_handle, args.max_stretch),
-            args.max_stretch)
+        sys.stdout.write('Collapsed {} stretches longer than {}.'.format(
+            collapse_fasta(
+                args.input_handle, args.output_handle, args.max_stretch),
+            args.max_stretch))
 
     elif args.subcommand == 's2i':
-        print 'converted {} records'.format(s2i(
-            args.input_handle, args.output_handle))
+        sys.stdout.write('converted {} records'.format(s2i(
+            args.input_handle, args.output_handle)))
 
     elif args.subcommand == 'tagcount':
-        print tagcount(args.input_handle, args.sequence, args.mismatches)
+        sys.stdout.write(
+            count_tags(args.input_handle, args.sequence, args.mismatches))
 
     elif args.subcommand == 'cat':
-        print '\n'.join(cat(args.input_handle))
+        sys.stdout.write('\n'.join(cat(args.input_handle)))
 
     elif args.subcommand == 'descr':
-        print '\n'.join(descr(args.input_handle))
+        sys.stdout.write('\n'.join(descr(args.input_handle)))
 
     else:
         try:
             args.func(**{k: v for k, v in vars(args).items()
                 if k not in ('func', 'subcommand')})
-        except ValueError, error:
+        except ValueError as error:
             parser.error(error)
 
 

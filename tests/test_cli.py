@@ -1,5 +1,5 @@
 """Tests for the fastools CLI."""
-import StringIO
+from io import StringIO
 
 from Bio import SeqIO
 
@@ -12,7 +12,7 @@ class TestCLI(object):
         self._sanitised_fa = open('data/sanitised.fa')
         self._sanitised_fq = open('data/sanitised.fq')
         self._length_fa = open('data/length.fa')
-        self._output = StringIO.StringIO()
+        self._output = StringIO()
         self._null = open('/dev/null', 'w')
 
     def _md5_check(self, md5sum):
@@ -27,7 +27,7 @@ class TestCLI(object):
             [self._sanitised_fa, open('data/sanitised_ed.fa')])[0][2] == 2
 
     def test_cat(self):
-        assert fastools.cat(self._sanitised_fa).next().startswith('TGAGCGGAAC')
+        assert next(fastools.cat(self._sanitised_fa)).startswith('TGAGCGGAAC')
 
     def test_collapse(self):
         fastools.collapse(self._sanitised_fa, self._output, 2)
@@ -44,7 +44,7 @@ class TestCLI(object):
         assert self._md5_check('33259a9357b75e7baca2909bfc254e61')
 
     def test_descr(self):
-        assert fastools.descr(self._sanitised_fa).next() == 'sanitised'
+        assert next(fastools.descr(self._sanitised_fa)) == 'sanitised'
 
     def test_dna2rna(self):
         fastools.dna2rna(self._sanitised_fa, self._output)
@@ -77,7 +77,7 @@ class TestCLI(object):
     def test_gen(self):
         fastools.gen(10, self._output, 'name', 'description')
         self._output.seek(0)
-        record = SeqIO.parse(self._output, 'fasta').next()
+        record = next(SeqIO.parse(self._output, 'fasta'))
         assert (
             len(record.seq) == 10 and record.description == 'name description')
 
@@ -114,7 +114,7 @@ class TestCLI(object):
 
     def test_raw2fa(self):
         fastools.raw2fa(
-            StringIO.StringIO('ACGT'), self._output, 'name', 'description')
+            StringIO('ACGT'), self._output, 'name', 'description')
         assert self._md5_check('6361fecba38154e9f3563d13c521154d')
 
     def test_restrict(self):
