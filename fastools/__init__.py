@@ -2,8 +2,9 @@ from os.path import dirname, abspath
 
 from configparser import ConfigParser
 
-from .fastools import guess_file_format, guess_header_format
+from .fastools import *
 from .peeker import Peeker
+from .utils import guess_file_format, guess_header_format
 
 
 config = ConfigParser()
