@@ -1,4 +1,4 @@
-.. dict-trie documentation.
+.. Fastools documentation.
 
 .. include:: ../README.rst
 
