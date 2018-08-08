@@ -1,5 +1,4 @@
-"""
-Split a FASTA file based on the occurrence of markers.
+"""Split a FASTA file based on the occurrence of markers.
 
 
 The output is FASTA-like, depending on the replacement defined in the library.
@@ -12,8 +11,8 @@ Per marker, two files are created:
 Format of the library file:
 name marker replacement
 """
-import argparse
-import sys
+from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
+from sys import stdout
 
 from Bio import SeqIO
 
@@ -21,8 +20,7 @@ from . import version
 
 
 def add_to_library(library, line):
-    """
-    Add a line from the library file to the library.
+    """Add a line from the library file to the library.
 
     A library entry contains:
     - name of the marker
@@ -44,8 +42,7 @@ def add_to_library(library, line):
 
 
 def write_output(entry, description, sequence):
-    """
-    Write a sequence and its header to its .txt file.
+    """Write a sequence and its header to its .txt file.
 
     While writing, also increase the marker counter and count the number of
     times this particular sequence has been found.
@@ -57,15 +54,14 @@ def write_output(entry, description, sequence):
     entry[3].write('>{}\n'.format(description))
     entry[3].write('{}\n'.format(sequence))
     entry[5] += 1
-    if entry[6].has_key(sequence):
+    if sequence in entry[6]:
         entry[6][sequence][1] += 1
     else:
         entry[6][sequence] = [description, 1]
 
 
 def split_fasta(input_handle, library_handle, output_handle):
-    """
-    Split a FASTA file based on the occurrence of markers.
+    """Split a FASTA file based on the occurrence of markers.
 
     :arg stream input_handle: Open readable handle to a FASTA file.
     :arg stream library_handle: Open readable handle to the library file.
@@ -117,24 +113,20 @@ def split_fasta(input_handle, library_handle, output_handle):
 
 
 def main():
-    """
-    Main entry point.
-    """
+    """Main entry point."""
     usage = __doc__.split("\n\n\n")
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=usage[0], epilog=usage[1])
+    parser = ArgumentParser(
+        formatter_class=RawDescriptionHelpFormatter, description=usage[0],
+        epilog=usage[1])
 
     parser.add_argument(
-        'input_handle', metavar='INPUT', type=argparse.FileType('r'),
-        help='input file')
+        'input_handle', metavar='INPUT', type=FileType('r'), help='input file')
     parser.add_argument(
-        'library_handle', metavar='LIBRARY', type=argparse.FileType('r'),
+        'library_handle', metavar='LIBRARY', type=FileType('r'),
         help='file containing markers')
     parser.add_argument(
-        '-o', dest='output_handle', metavar='OUTPUT',
-        type=argparse.FileType('w'), default=sys.stdout,
-        help='output file (default=stdout)')
+        '-o', dest='output_handle', metavar='OUTPUT', type=FileType('w'),
+        default=stdout, help='output file (default=stdout)')
     parser.add_argument('-v', action='version', version=version(parser.prog))
 
     args = parser.parse_args()

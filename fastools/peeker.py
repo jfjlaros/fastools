@@ -1,13 +1,13 @@
 """
 http://stackoverflow.com/questions/14283025/python-3-reading-bytes-from-stdin-pipe-with-readahead
 """
-import cStringIO
-import os
+from io import BytesIO
+from os import SEEK_END
 
 
 class Peeker(object):
     def __init__(self, handle):
-        self._buf = cStringIO.StringIO()
+        self._buf = BytesIO()
         self._handle = handle
 
         self.name = handle.name
