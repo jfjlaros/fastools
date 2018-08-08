@@ -1,7 +1,8 @@
+import sys
+
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
 from csv import Sniffer, reader as csv_reader
 from random import randint
-from sys import stdout, stderr
 from urllib.error import HTTPError
 
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
@@ -190,7 +191,7 @@ def fq2fa(input_handle, output_handle):
         for record in SeqIO.parse(input_handle, 'fastq'):
             SeqIO.write(record, output_handle, 'fasta')
     except ValueError as error:
-        stderr.write('Error: {}\n'.format(error))
+        sys.stderr.write('Error: {}\n'.format(error))
         emptyRecord = SeqRecord(Seq.Seq(''), '', '', '')
         SeqIO.write(emptyRecord, output_handle, 'fasta')
 
@@ -243,7 +244,7 @@ def get(name, email, output_handle, start=0, stop=0, orientation=0):
         else:
             handle = Entrez.efetch(db='nuccore', rettype='fasta', id=name)
     except HTTPError: # URLError if NCBI is down.
-        stderr.write('Error: could not retrieve {}\n'.format(name))
+        sys.stderr.write('Error: could not retrieve {}\n'.format(name))
         return
 
     output_handle.write(handle.read())
@@ -297,13 +298,13 @@ def maln(input_handle):
 
     data = {x.name: str(x.seq) for x in SeqIO.parse(input_handle, 'fasta')}
     for j in data:
-        stdout.write(j)
-    stdout.write('\n')
+        sys.stdout.write(j)
+    sys.stdout.write('\n')
     for i in data:
-        stdout.write(i)
+        sys.stdout.write(i)
         for j in data:
-            stdout.write(hamming(data[i], data[j]))
-        stdout.write('\n')
+            sys.stdout.write(hamming(data[i], data[j]))
+        sys.stdout.write('\n')
 
     return distances
 
@@ -748,7 +749,7 @@ def main():
         help='amount of mismatches allowed (%(type)s default=%(default)s)')
     subparser.set_defaults(func=tagcount)
 
-    stdin = Peeker(stdin)
+    sys.stdin = Peeker(sys.stdin)
 
     try:
         args = parser.parse_args()
@@ -757,38 +758,38 @@ def main():
 
     if args.subcommand == 'aln':
         for i in aln(args.input_handles):
-            stdout.write('{} {} {}'.format(*i))
+            sys.stdout.write('{} {} {}'.format(*i))
 
     elif args.subcommand == 'length':
-        stdout.write(
+        sys.stdout.write(
             ' '.join(map(lambda x: str(x), length(args.input_handle))))
 
     elif args.subcommand == 'list_enzymes':
-        stdout.write('\n'.join(list_enzymes()))
+        sys.stdout.write('\n'.join(list_enzymes()))
 
     elif args.subcommand == 'restrict':
-        stdout.write(' '.join(
+        sys.stdout.write(' '.join(
             map(lambda x: str(x), restrict(args.input_handle, args.enzymes))))
 
     elif args.subcommand == 'collapse':
-        stdout.write('Collapsed {} stretches longer than {}.'.format(
+        sys.stdout.write('Collapsed {} stretches longer than {}.'.format(
             collapse_fasta(
                 args.input_handle, args.output_handle, args.max_stretch),
             args.max_stretch))
 
     elif args.subcommand == 's2i':
-        stdout.write('converted {} records'.format(s2i(
+        sys.stdout.write('converted {} records'.format(s2i(
             args.input_handle, args.output_handle)))
 
     elif args.subcommand == 'tagcount':
-        stdout.write(
+        sys.stdout.write(
             count_tags(args.input_handle, args.sequence, args.mismatches))
 
     elif args.subcommand == 'cat':
-        stdout.write('\n'.join(cat(args.input_handle)))
+        sys.stdout.write('\n'.join(cat(args.input_handle)))
 
     elif args.subcommand == 'descr':
-        stdout.write('\n'.join(descr(args.input_handle)))
+        sys.stdout.write('\n'.join(descr(args.input_handle)))
 
     else:
         try:
