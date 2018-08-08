@@ -54,8 +54,8 @@ and for FASTQ, we can use:
 
     fastools lenfilt -l 25 input.fq small.fq large.fq
 
-In bother cases, sequences larger than 25 are written to the ``large`` file,
-the other sequences are written to the ``small`` file.
+In both cases, sequences larger than 25 are written to the ``large`` file, the
+other sequences are written to the ``small`` file.
 
 ``split_fasta``
 ---------------
