@@ -8,7 +8,8 @@ from .utils import guess_file_format, guess_header_format
 
 
 config = ConfigParser()
-config.readfp(open('{}/setup.cfg'.format(dirname(abspath(__file__)))))
+with open('{}/setup.cfg'.format(dirname(abspath(__file__)))) as handle:
+    config.read_file(handle)
 
 _copyright_notice = 'Copyright (c) {} {} <{}>'.format(
     config.get('metadata', 'copyright'),
