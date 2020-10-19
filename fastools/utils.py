@@ -1,5 +1,5 @@
 from collections import defaultdict
-from re import compile as re_compile, split as re_split, IGNORECASE
+from regex import compile as re_compile, split as re_split, IGNORECASE
 
 from Bio import Seq, SeqIO
 from Bio.SeqRecord import SeqRecord
