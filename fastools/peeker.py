@@ -14,7 +14,7 @@ class Peeker(object):
 
     def _append_to_buf(self, data):
         position = self._buf.tell()
-        self._buf.seek(0, os.SEEK_END)
+        self._buf.seek(0, SEEK_END)
         self._buf.write(data)
         self._buf.seek(position)
 
