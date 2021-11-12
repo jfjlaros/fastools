@@ -1,11 +1,10 @@
-import sys
+from sys import stderr, stdout
 
 from csv import Sniffer, reader as csv_reader
 from random import randint
 from urllib.error import HTTPError
 
 from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
-from Bio.Alphabet import IUPAC
 from Bio.SeqRecord import SeqRecord
 from Levenshtein import distance, hamming
 
@@ -158,7 +157,7 @@ def fa2gb(input_handle, output_handle, name):
     :arg str name: A GenBank accession number.
     """
     for record in SeqIO.parse(input_handle, 'fasta'):
-        record.seq.alphabet = IUPAC.unambiguous_dna
+        record.annotations["molecule_type"] = "DNA"
         record.id = name
         record.name = name
         SeqIO.write(record, output_handle, 'genbank')
@@ -188,7 +187,7 @@ def fq2fa(input_handle, output_handle):
         for record in SeqIO.parse(input_handle, 'fastq'):
             SeqIO.write(record, output_handle, 'fasta')
     except ValueError as error:
-        sys.stderr.write('Error: {}\n'.format(error))
+        stderr.write('Error: {}\n'.format(error))
         emptyRecord = SeqRecord(Seq.Seq(''), '', '', '')
         SeqIO.write(emptyRecord, output_handle, 'fasta')
 
@@ -241,7 +240,7 @@ def get(name, email, output_handle, start=0, stop=0, orientation=0):
         else:
             handle = Entrez.efetch(db='nuccore', rettype='fasta', id=name)
     except HTTPError: # URLError if NCBI is down.
-        sys.stderr.write('Error: could not retrieve {}\n'.format(name))
+        stderr.write('Error: could not retrieve {}\n'.format(name))
         return
 
     output_handle.write(handle.read())
@@ -295,13 +294,13 @@ def maln(input_handle):
 
     data = {x.name: str(x.seq) for x in SeqIO.parse(input_handle, 'fasta')}
     for j in data:
-        sys.stdout.write(j)
-    sys.stdout.write('\n')
+        stdout.write(j)
+    stdout.write('\n')
     for i in data:
-        sys.stdout.write(i)
+        stdout.write(i)
         for j in data:
-            sys.stdout.write(hamming(data[i], data[j]))
-        sys.stdout.write('\n')
+            stdout.write(hamming(data[i], data[j]))
+        stdout.write('\n')
 
     return distances
 

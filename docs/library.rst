@@ -11,6 +11,3 @@ programs. To access the library, simply import ``fastools``:
     # Make a random FASTA record and write it to `output.fa`.
     handle = open('output.fa', 'w')
     gen(10, handle, 'name', 'description')
-
-
-.. _pypi: https://pypi.python.org/pypi/fastools

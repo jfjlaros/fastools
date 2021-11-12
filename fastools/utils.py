@@ -77,11 +77,11 @@ def guess_file_format(handle):
 
     :return str: Either 'fasta' or 'fastq'.
     """
-    if not hasattr(handle, 'name') or handle.name != '<stdin>':
+    if handle.fileno():
         token = handle.read(1)
         handle.seek(0)
     else:
-        token = handle.peek(1)
+        token = str(handle.buffer.peek(1))
 
     if token == '>':
         return 'fasta'
@@ -95,11 +95,11 @@ def guess_header_format(handle):
 
     :return str: Either 'normal', 'x' or 'unknown'.
     """
-    if not hasattr(handle, 'name') or handle.name != '<stdin>':
+    if handle.fileno():
         line = handle.readline().strip('\n')
         handle.seek(0)
     else:
-        line = handle.peek(1024).split('\n')[0]
+        line = str(handle.buffer.peek(1024)).split('\n')[0]
 
     if line.count('#') == 1 and line.split('#')[1].count('/') == 1:
         return 'normal'

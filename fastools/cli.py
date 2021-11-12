@@ -1,32 +1,31 @@
-import sys
-
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
+from sys import stdin, stdout
 
 from . import doc_split, version, usage
 from .fastools import *
-from .peeker import Peeker
+from .peeker import Peeker, Pkr
 
 
 def main():
     """Main entry point."""
     input_parser = ArgumentParser(add_help=False)
     input_parser.add_argument(
-        'input_handle', metavar='INPUT', type=FileType('r'),
+        'input_handle', metavar='INPUT', type=FileType('rt'),
         help='input file')
 
     input2_parser = ArgumentParser(add_help=False)
     input2_parser.add_argument(
-        'input_handles', metavar='INPUT', type=FileType('r'), nargs=2,
+        'input_handles', metavar='INPUT', type=FileType('rt'), nargs=2,
         help='input files')
 
     output_parser = ArgumentParser(add_help=False)
     output_parser.add_argument(
-        'output_handle', metavar='OUTPUT', type=FileType('w'),
+        'output_handle', metavar='OUTPUT', type=FileType('wt'),
         help='output file')
 
     output2_parser = ArgumentParser(add_help=False)
     output2_parser.add_argument(
-        'output_handles', metavar='OUTPUT', type=FileType('w'), nargs=2,
+        'output_handles', metavar='OUTPUT', type=FileType('wt'), nargs=2,
         help='output files')
 
     file_parser = ArgumentParser(
@@ -56,7 +55,7 @@ def main():
     description_parser = ArgumentParser(add_help=False)
     description_parser.add_argument(
         'description', metavar='DESCR', type=str,
-        help='descriptino of the DNA sequence')
+        help='description of the DNA sequence')
 
     parser = ArgumentParser(
         formatter_class=RawDescriptionHelpFormatter,
@@ -104,7 +103,7 @@ def main():
         'edit', parents=[input_parser, output_parser],
         description=doc_split(edit))
     subparser.add_argument(
-        'edits_handle', metavar='EDITS', type=FileType('r'),
+        'edits_handle', metavar='EDITS', type=FileType('rt'),
         help='FASTA file containing edits')
     subparser.set_defaults(func=edit)
 
@@ -240,7 +239,8 @@ def main():
         help='amount of mismatches allowed (%(type)s default=%(default)s)')
     subparser.set_defaults(func=tagcount)
 
-    sys.stdin = Peeker(sys.stdin)
+    global stdin
+    stdin = Pkr(stdin.buffer)
 
     try:
         args = parser.parse_args()
@@ -249,38 +249,38 @@ def main():
 
     if args.subcommand == 'aln':
         for i in aln(args.input_handles):
-            sys.stdout.write('{} {} {}'.format(*i))
+            stdout.write('{} {} {}'.format(*i))
 
     elif args.subcommand == 'length':
-        sys.stdout.write(
+        stdout.write(
             ' '.join(map(lambda x: str(x), length(args.input_handle))))
 
     elif args.subcommand == 'list_enzymes':
-        sys.stdout.write('\n'.join(list_enzymes()))
+        stdout.write('\n'.join(list_enzymes()))
 
     elif args.subcommand == 'restrict':
-        sys.stdout.write(' '.join(
+        stdout.write(' '.join(
             map(lambda x: str(x), restrict(args.input_handle, args.enzymes))))
 
     elif args.subcommand == 'collapse':
-        sys.stdout.write('Collapsed {} stretches longer than {}.'.format(
+        stdout.write('Collapsed {} stretches longer than {}.'.format(
             collapse_fasta(
                 args.input_handle, args.output_handle, args.max_stretch),
             args.max_stretch))
 
     elif args.subcommand == 's2i':
-        sys.stdout.write('converted {} records'.format(s2i(
+        stdout.write('converted {} records'.format(s2i(
             args.input_handle, args.output_handle)))
 
     elif args.subcommand == 'tagcount':
-        sys.stdout.write(
+        stdout.write(
             count_tags(args.input_handle, args.sequence, args.mismatches))
 
     elif args.subcommand == 'cat':
-        sys.stdout.write('\n'.join(cat(args.input_handle)))
+        stdout.write('\n'.join(cat(args.input_handle)))
 
     elif args.subcommand == 'descr':
-        sys.stdout.write('\n'.join(descr(args.input_handle)))
+        stdout.write('\n'.join(descr(args.input_handle)))
 
     else:
         try:

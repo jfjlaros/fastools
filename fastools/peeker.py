@@ -1,7 +1,7 @@
 """
 http://stackoverflow.com/questions/14283025/python-3-reading-bytes-from-stdin-pipe-with-readahead
 """
-from io import BytesIO
+from io import BytesIO, TextIOWrapper
 from os import SEEK_END
 
 
@@ -35,4 +35,36 @@ class Peeker(object):
         line = self._buf.readline()
         if not line.endswith('\n'):
             line += self.handle.readline()
+        return line
+
+
+class Pkr(TextIOWrapper):
+    def __init__(self, *args, **kwargs):
+        TextIOWrapper.__init__(self, *args, **kwargs)
+
+        self._buf = BytesIO()
+
+    def _append_to_buf(self, data):
+        position = self._buf.tell()
+        self._buf.seek(0, SEEK_END)
+        self._buf.write(data)
+        self._buf.seek(position)
+
+    def peek(self, size):
+        data = self.buffer.read(size)
+        self._append_to_buf(data)
+        return data
+
+    def read(self, size=None):
+        if size is None:
+            return self._buf.read() + self.buffer.read()
+        data = self._buf.read(size)
+        if len(data) < size:
+            data += self.buffer.read(size - len(data))
+        return data
+
+    def readline(self):
+        line = self._buf.readline()
+        if not line.endswith('\n'):
+            line += self.buffer.readline()
         return line
