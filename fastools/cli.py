@@ -274,7 +274,7 @@ def main():
 
     elif args.subcommand == 'tagcount':
         stdout.write(
-            count_tags(args.input_handle, args.sequence, args.mismatches))
+            str(tagcount(args.input_handle, args.sequence, args.mismatches)))
 
     elif args.subcommand == 'cat':
         stdout.write('\n'.join(cat(args.input_handle)))

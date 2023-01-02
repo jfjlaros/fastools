@@ -4,7 +4,8 @@ from csv import Sniffer, reader as csv_reader
 from random import randint
 from urllib.error import HTTPError
 
-from Bio import Seq, SeqIO, Entrez, pairwise2, Restriction
+from Bio import Seq, SeqIO, Entrez, Restriction
+from Bio.Align import PairwiseAligner
 from Bio.SeqRecord import SeqRecord
 from Levenshtein import distance, hamming
 
@@ -502,11 +503,14 @@ def tagcount(input_handle, sequence, mismatches):
     """
     count = 0
 
-    for record in SeqIO.parse(input_handle, 'fasta'):
-        alignment = pairwise2.align.localms(
-            str(record.seq), sequence, 1, -1, -1, -1)
+    aligner = PairwiseAligner()
+    aligner.mode = "local"
+    aligner.gap_score = -1
 
-        if alignment and len(sequence) - alignment[0][2] <= mismatches:
+    for record in SeqIO.parse(input_handle, 'fasta'):
+        alignment = aligner.align(str(record.seq), sequence)
+
+        if alignment and len(sequence) - alignment.score <= mismatches:
             count += 1
 
     return count
