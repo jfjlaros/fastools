@@ -21,7 +21,7 @@ def doc_split(func: Callable) -> str:
 
 _project = _extract('Name')
 _version = _extract('Version')
-_year = 2013-2026
+_year = '2013-2026'
 _author = _extract('Author-email', r'"', 1)
 _email = _extract('Author-email', r'<|>', 1)
 _description = _extract('Summary')

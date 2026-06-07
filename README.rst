@@ -3,7 +3,7 @@ Fastools
 
 .. image:: https://img.shields.io/github/last-commit/jfjlaros/fastools.svg
    :target: https://github.com/jfjlaros/fastools/graphs/commit-activity
-.. image:: https://github.com/jfjlaros/fastools/actions/workflows/python-package.yml/badge.svg
+.. image:: https://github.com/jfjlaros/fastools/actions/workflows/test.yml/badge.svg
    :target: https://github.com/jfjlaros/fastools/actions/workflows/python-package.yml
 .. image:: https://readthedocs.org/projects/fastools/badge/?version=latest
    :target: https://fastools.readthedocs.io/en/latest
