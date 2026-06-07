@@ -5,7 +5,7 @@ build-backend = 'hatchling.build'
 [project]
 name = 'Fastools'
 description = 'FASTA/FASTQ analysis and manipulation toolkit.'
-version = '1.1.6'
+version = '1.1.7'
 
 authors = [{name = 'Jeroen F.J. Laros', email = 'jlaros@fixedpoint.nl'}]
 urls = {homepage = 'https://git.lumc.nl/j.f.j.laros/fastools'}
