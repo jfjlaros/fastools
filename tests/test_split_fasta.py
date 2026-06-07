@@ -5,7 +5,7 @@ from shared import FakeOpen, md5_check
 
 
 class TestSplitFasta(object):
-    def setup(self):
+    def setup_method(self):
         fake_open = FakeOpen()
         self._handles = fake_open.handles
         split_fasta.open = fake_open.open

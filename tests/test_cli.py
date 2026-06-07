@@ -8,7 +8,7 @@ from fastools import cli as fastools
 from shared import md5_check
 
 class TestCLI(object):
-    def setup(self):
+    def setup_method(self):
         self._sanitised_fa = open('data/sanitised.fa')
         self._sanitised_fq = open('data/sanitised.fq')
         self._length_fa = open('data/length.fa')

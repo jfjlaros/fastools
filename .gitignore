@@ -1,7 +1,5 @@
-*.pyc
 *.swp
-.cache/
-.pytest_cache/
-build/
+.gitignore
+__pycache__/
 dist/
-fastools.egg-info/
+docs/html

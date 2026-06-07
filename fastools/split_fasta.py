@@ -16,7 +16,7 @@ from sys import stdout
 
 from Bio import SeqIO
 
-from . import version
+from . import _info
 
 
 def add_to_library(library, line):
@@ -127,7 +127,7 @@ def main():
     parser.add_argument(
         '-o', dest='output_handle', metavar='OUTPUT', type=FileType('w'),
         default=stdout, help='output file (default=stdout)')
-    parser.add_argument('-v', action='version', version=version(parser.prog))
+    parser.add_argument('-v', action='version', version=_info)
 
     args = parser.parse_args()
 

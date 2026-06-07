@@ -1,0 +1,26 @@
+[build-system]
+requires = ['hatchling']
+build-backend = 'hatchling.build'
+
+[project]
+name = 'Fastools'
+description = 'FASTA/FASTQ analysis and manipulation toolkit.'
+version = '1.1.5'
+
+authors = [{name = 'Jeroen F.J. Laros', email = 'jlaros@fixedpoint.nl'}]
+urls = {homepage = 'https://git.lumc.nl/j.f.j.laros/fastools'}
+readme = 'README.rst'
+keywords = ['bioinformatics', 'FASTQ', 'FASTA']
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Operating System :: OS Independent',
+    'Intended Audience :: Science/Research',
+    'Intended Audience :: Developers',
+    'Topic :: Scientific/Engineering']
+license = 'MIT'
+
+dependencies = ['biopython', 'python-Levenshtein', 'regex']
+
+[project.scripts]
+fastools = 'fastools.cli:main'
+split_fasta = 'fastools.split_fasta:main'

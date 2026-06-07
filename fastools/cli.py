@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, FileType, RawDescriptionHelpFormatter
 from sys import stdin, stdout
 
-from . import doc_split, version, usage
+from . import _copyright, _description, _info, doc_split
 from .fastools import *
 from .peeker import Peeker, Pkr
 
@@ -59,8 +59,8 @@ def main():
 
     parser = ArgumentParser(
         formatter_class=RawDescriptionHelpFormatter,
-        description=usage[0], epilog=usage[1])
-    parser.add_argument('-v', action='version', version=version(parser.prog))
+        description=_description, epilog=_copyright)
+    parser.add_argument('-v', action='version', version=_info)
     subparsers = parser.add_subparsers(dest='subcommand')
     subparsers.required = True
 
